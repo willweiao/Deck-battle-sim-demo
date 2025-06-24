@@ -64,7 +64,7 @@ class Battle:
         self.log.append(f"[Turn {self.turn}] Drew cards: {', '.join(drawn_cards)}")
         return drawn
     
-    def play_cards(self, card, user, target=None):
+    def play_card(self, card, user, target=None):
         target_info = f"targeting {target.name}" if target else "with no target"
         self.log.append(f"[Play] {user.name} plays {card.name} {target_info}.")
         card.apply(user, target, battle=self)

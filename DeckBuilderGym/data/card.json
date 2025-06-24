@@ -1,0 +1,53 @@
+[
+    {
+        "id": "strike",
+        "name": "Strike",
+        "tag": "basic",
+        "cost": 1,
+        "card_type": "attack",
+        "effects": [
+            { "effect": "attack", "value": 6 }
+        ]
+    },
+    {
+        "id": "block",
+        "name": "Block",
+        "tag": "basic",
+        "cost": 1,
+        "card_type": "skill",
+        "effects":[
+            {"effect": "block", "value": 5}
+        ]
+    },
+    {
+        "id":"bash",
+        "name":"Bash",
+        "tag": "basic",
+        "cost": 2,
+        "card_type": "attack",
+        "effects": [
+            {"effect": "attack", "value": 8},
+            {"effect": "debuff", "name": "Vulnerable", "duration": 2}
+        ]
+    },
+    {
+        "id": "burn",
+        "name": "Burn",
+        "tag": "basic",
+        "cost": 1,
+        "card_type": "power",
+        "effects":[
+            {"effect": "buff", "name": "Strength", "value": 2}
+        ]
+    },
+    {
+        "id": "sweep",
+        "name": "Sweep",
+        "tag": "basic",
+        "cost": 1,
+        "card_type":"attack",
+        "effects":[
+            {"effect": "attack", "value": 7, "target_selector": "all_enemies"}
+        ]
+    }
+]

@@ -2,9 +2,10 @@ import random
 
 
 class Card:
-    def __init__(self, id, name, cost, effects, card_type, ethereal=False, exhaust=False, innate=False, retain=False, shuffle_back=False):
+    def __init__(self, id, name, tag, cost, effects, card_type, ethereal=False, exhaust=False, innate=False, retain=False, shuffle_back=False):
         self.id = id
-        self.name = name 
+        self.name = name
+        self.tag = tag
         self.cost = cost
         self.effects = effects
         self.card_type = card_type
@@ -20,8 +21,8 @@ class Card:
 
 
 class CardEffect:
-    def __init__(self, target_selector=None):
-        self.target_selector = target_selector or DefaultTargetSelector()
+    def __init__(self, target_selector: str = "single_enemy"):
+        self.target_selector = target_selector  # 只是一个描述用的字段
 
     def apply(self, user, target, battle=None):
         raise NotImplementedError
@@ -29,15 +30,15 @@ class CardEffect:
 
 class AttackEffect(CardEffect):
     def __init__(self, amount, target_selector=None):
-        super().__init__(target_selector)
+        self.target_selector = target_selector
         self.amount = amount
 
     def apply(self, user, enemies, battle=None):
-        targets = self.target_selector.select(user, enemies)
+        if not isinstance(targets, list):
+            targets = [targets]
         for target in targets:
-            damage = EffectCalculator.modified_damage(self.amount, attacker=user, defender=target)
-            target.take_damage(damage)
-
+            dmg = EffectCalculator.modified_damage(self.amount, user, target)
+            target.take_damage(dmg)
 
 class BlockEffect(CardEffect):
     def __init__(self, amount):
@@ -49,29 +50,21 @@ class BlockEffect(CardEffect):
 
 
 class BuffEffect(CardEffect):
-    def __init__(self, name, value, target_self=True):
+    def __init__(self, name, value):
         self.name = name
         self.value = value
-        self.target_self = target_self
-    
+
     def apply(self, user, target, battle=None):
-        if self.target_self:
-            user.apply_buff(self.name, self.value)
-        else:
-            target.apply_buff(self.name, self.value)
+        target.apply_buff(self.name, self.value)
 
 
 class DebuffEffect(CardEffect):
-    def __init__(self, name, duration, target_user=False):
+    def __init__(self, name, duration):
         self.name = name
         self.duration = duration
-        self.target_user = target_user
 
     def apply(self, user, target, battle=None):
-        if self.target_user:
-            user.apply_debuff(self.name, self.duration)
-        else:
-            target.apply_debuff(self.name, self.duration)
+        target.apply_debuff(self.name, self.duration)
 
 
 class DrawEffect(CardEffect):
@@ -92,36 +85,6 @@ class EnergyEffect(CardEffect):
         user.energy += self.amount
 
 
-class TargetSelector:
-    def select(self, user, enemies):
-        raise NotImplementedError
-
-
-class SingleRandomEnemy(TargetSelector):
-    def select(self, user, enemies):
-        alive = [e for e in enemies if e.hp > 0]
-        return [random.choice(alive)] if alive else []
-
-
-class AllEnemies(TargetSelector):
-    def select(self, user, enemies):
-        return [e for e in enemies if e.hp > 0]
-
-
-class LowestHPEnemy(TargetSelector):
-    def select(self, user, enemies):
-        alive = [e for e in enemies if e.hp > 0]
-        return [min(alive, key=lambda e: e.hp)] if alive else []
-
-
-class DefaultTargetSelector(TargetSelector):
-    def select(self, user, enemies):
-        raise Exception(
-            "[TargetSelector Error] This card effect requires a target selector, but none was provided.\n"
-            "You must explicitly assign a TargetSelector (e.g., SingleEnemySelector, AllEnemiesSelector) when creating the effect."
-        )
-    
-
 class EffectCalculator:
     
     @staticmethod
@@ -138,7 +101,7 @@ class EffectCalculator:
             damage = min(damage, 1)
         
         if "Vulnerable" in defender.buffs:
-            damage = int(damage * 1.25)
+            damage = int(damage * 1.5)
 
         return max(0, damage)
     

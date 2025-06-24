@@ -1,15 +1,16 @@
-from card import Effectcalculator
+from card import EffectCalculator
+from player_strategy import SimpleStrategy
 
 class Player:
-    def __init__(self, name, hp, energy,max_hp=80, max_energy=3, buffs=None, debuffs=None, strategy="PlayStrategy"):
+    def __init__(self, name, hp, energy, max_hp=None, max_energy=3, buffs=None, debuffs=None, strategy=None):
         self.name = name
         self.hp = hp
-        self.max_hp = max_hp
+        self.max_hp = max_hp or hp
         self.energy = energy
         self.max_energy = max_energy
         self.buffs = buffs or {}
         self.debuffs = debuffs or {}
-        self.strategy = strategy
+        self.strategy = strategy or SimpleStrategy()
         self.block = 0
     
     def begin_turn(self):
@@ -85,13 +86,18 @@ class Player:
                     del self.debuffs[name]
 
     def play_cards(self, hand, enemies, battle):
-        for card in hand[:]:
-            if card.cost <= self.energy and enemies:
-                target = enemies[0]
-                card.apply(self, target, battle)
+        while True:
+            card = self.strategy.select_card(hand, self, enemies, battle)
+            if card is None:
+                break
 
+            target = self.strategy.select_target(card, self, enemies, battle)
+            if target is None:
+                break
 
+            battle.play_card(card, self, target)
 
+"""
 # 可能需要修改以下的逻辑，我在battle类中定义了打牌以及回合中的逻辑，但是我想把选牌以及选取目标领出来做一个新的可维护的类，用组合优化的方式写一些可选的策略
 class PlayStrategy:
     def decide_and_play(self, player, hand, enemies, battle):
@@ -117,3 +123,4 @@ class ManualStrategy(PlayStrategy):
             card.apply(player, target)
             player.energy -= card.cost
             cards_played += 1
+"""

@@ -1,8 +1,9 @@
 from card import EffectCalculator
 
 class Enemy:
-    def __init__(self, name, hp, max_hp, buffs=None, debuffs=None, intent_sq=None, tags=None):
-        self.name = name
+    def __init__(self, id, name, hp, max_hp, buffs=None, debuffs=None, intent_sq=None, tags=None):
+        self.id = id
+        self.name = name or id
         self.hp = hp
         self.max_hp = max_hp
         self.buffs = buffs or {}

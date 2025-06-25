@@ -46,7 +46,7 @@ def load_card_by_id(card_pool, card_id):
             return Card(
                 id=card_def["id"],
                 name=card_def["name"],
-                tag=card_def["tag"],
+                rarity=card_def["rarity"],
                 cost=card_def["cost"],
                 target_selector=card_def["target_selector"],
                 effects=effects,
@@ -61,13 +61,13 @@ def load_card_by_id(card_pool, card_id):
 
 
 def generate_reward_choices(card_pool, num_choices=3):
-    non_basic = [c for c in card_pool if c["tag"] not in {"basic"}]
+    non_basic = [c for c in card_pool if c["rarity"] not in {"basic"}]
     selected_defs = random.sample(non_basic, k=num_choices)
     return [load_card_by_id(card_pool, c["id"]) for c in selected_defs]
 
 
 def build_starting_deck(card_pool):
-    starting_ids = ["strike"] * 5 + ["block"] * 5 + ["bash"] + ["burn"] + ["sweep"]
+    starting_ids = ["strike"] * 5 + ["block"] * 5 + ["bash"] + ["burn"] + ["cleave"]+["iron_wave"]+["twin_strike"]
     return [load_card_by_id(card_pool, cid) for cid in starting_ids]
 
 

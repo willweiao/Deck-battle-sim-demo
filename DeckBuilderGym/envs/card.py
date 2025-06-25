@@ -3,10 +3,10 @@ from buff_n_debuff import get_buff_value, get_debuff_value, has_buff, has_debuff
 
 
 class Card:
-    def __init__(self, id, name, tag, cost, effects, card_type, target_selector=None, ethereal=False, exhaust=False, innate=False, retain=False, shuffle_back=False):
+    def __init__(self, id, name, rarity, cost, effects, card_type, target_selector=None, ethereal=False, exhaust=False, innate=False, retain=False, shuffle_back=False):
         self.id = id
         self.name = name
-        self.tag = tag
+        self.rarity = rarity
         self.cost = cost
         self.effects = effects
         self.card_type = card_type
@@ -43,7 +43,7 @@ class BlockEffect(CardEffect):
         self.amount = amount
 
     def apply(self, user, target, battle=None):
-        block =  EffectCalculator.modified_block(self.amount, user)
+        block = EffectCalculator.modified_block(self.amount, user)
         user.gain_block(block)
 
 

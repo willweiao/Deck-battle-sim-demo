@@ -96,33 +96,6 @@ class Player:
             if not targets:
                 break
             
-            print(f"DEBUG: play_cards target: {[t.name for t in targets]}")
+            #print(f"DEBUG: play_cards target: {[t.name for t in targets]}")
             battle.play_card(card, self, targets)
 
-"""
-# 可能需要修改以下的逻辑，我在battle类中定义了打牌以及回合中的逻辑，但是我想把选牌以及选取目标领出来做一个新的可维护的类，用组合优化的方式写一些可选的策略
-class PlayStrategy:
-    def decide_and_play(self, player, hand, enemies, battle):
-        raise NotImplementedError
-
-
-class ManualStrategy(PlayStrategy):
-    def __init__(self, n=3):
-        self.n = n
- 
-    def decide_and_play(self, player, hand, enemies, battle):
-        cards_played = 0
-
-        for card in hand[:]:
-            if cards_played >= self.n:
-                break
-        
-        if player.energy >= card.cost:
-            target = None
-            if enemies:
-                target = enemies[0]
-
-            card.apply(player, target)
-            player.energy -= card.cost
-            cards_played += 1
-"""

@@ -2,7 +2,7 @@
     {
         "id": "strike",
         "name": "Strike",
-        "tag": "basic",
+        "rarity": "basic",
         "cost": 1,
         "card_type": "attack",
         "target_selector": "single_enemy",
@@ -13,7 +13,7 @@
     {
         "id": "block",
         "name": "Block",
-        "tag": "basic",
+        "rarity": "basic",
         "cost": 1,
         "card_type": "skill",
         "target_selector": "self",
@@ -24,7 +24,7 @@
     {
         "id":"bash",
         "name":"Bash",
-        "tag": "basic",
+        "rarity": "basic",
         "cost": 2,
         "card_type": "attack",
         "target_selector": "single_enemy",
@@ -36,7 +36,7 @@
     {
         "id": "burn",
         "name": "Burn",
-        "tag": "basic",
+        "rarity": "basic",
         "cost": 1,
         "card_type": "power",
         "target_selector":"self",
@@ -45,14 +45,38 @@
         ]
     },
     {
-        "id": "sweep",
-        "name": "Sweep",
-        "tag": "basic",
+        "id": "cleave",
+        "name": "Cleave",
+        "rarity": "basic",
         "cost": 1,
         "card_type":"attack",
         "target_selector": "all_enemies",
         "effects":[
-            {"effect": "attack", "value": 7}
+            {"effect": "attack", "value": 8}
+        ]
+    },
+    {
+        "id": "iron_wave",
+        "name": "Iron Wave",
+        "rarity": "basic",
+        "cost": 1,
+        "card_type": "attack",
+        "target_selector": "single_enemy",
+        "effects":[
+            {"effect":"attack", "value": 5},
+            {"effect":"block", "value":5}
+        ]
+    },
+    {
+        "id": "twin_strike",
+        "name": "Twin Strike",
+        "rarity": "basic",
+        "cost": 1,
+        "card_type":"attack",
+        "target_selector":"single_enemy",
+        "effects":[
+            {"effect":"attack", "value": 7},
+            {"effect":"attack", "value": 7}
         ]
     }
 ]

@@ -5,8 +5,9 @@
         "tag": "basic",
         "cost": 1,
         "card_type": "attack",
+        "target_selector": "single_enemy",
         "effects": [
-            { "effect": "attack", "value": 6 }
+            { "effect": "attack", "value": 6}
         ]
     },
     {
@@ -15,6 +16,7 @@
         "tag": "basic",
         "cost": 1,
         "card_type": "skill",
+        "target_selector": "self",
         "effects":[
             {"effect": "block", "value": 5}
         ]
@@ -25,6 +27,7 @@
         "tag": "basic",
         "cost": 2,
         "card_type": "attack",
+        "target_selector": "single_enemy",
         "effects": [
             {"effect": "attack", "value": 8},
             {"effect": "debuff", "name": "Vulnerable", "duration": 2}
@@ -36,6 +39,7 @@
         "tag": "basic",
         "cost": 1,
         "card_type": "power",
+        "target_selector":"self",
         "effects":[
             {"effect": "buff", "name": "Strength", "value": 2}
         ]
@@ -46,8 +50,9 @@
         "tag": "basic",
         "cost": 1,
         "card_type":"attack",
+        "target_selector": "all_enemies",
         "effects":[
-            {"effect": "attack", "value": 7, "target_selector": "all_enemies"}
+            {"effect": "attack", "value": 7}
         ]
     }
 ]

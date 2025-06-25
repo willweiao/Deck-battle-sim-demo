@@ -1,4 +1,5 @@
 from card import EffectCalculator
+from buff_n_debuff import apply_regen, tick_poison, tick_standard_duration
 
 class Enemy:
     def __init__(self, id, name, hp, max_hp, buffs=None, debuffs=None, intent_sq=None, tags=None):
@@ -30,29 +31,28 @@ class Enemy:
                 del self.debuffs[name]
                 
     def tick_buffs_and_debuffs(self):
+        # Buffs
         for name in list(self.buffs.keys()):
             entry = self.buffs[name]
 
             if name == "Regen":
                 self.heal(entry["value"])
 
-            if "duration" in entry:
-                entry["duration"] -= 1
-                if entry["duration"] <= 0:
-                    del self.buffs[name]
+            if not tick_standard_duration(entry):
+                del self.buffs[name]
 
+        # Debuffs
         for name in list(self.debuffs.keys()):
             entry = self.debuffs[name]
+
             if name == "Poison":
                 damage = entry["value"]
                 self.hp -= damage
                 entry["value"] -= 1
                 if entry["value"] <= 0:
                     del self.debuffs[name]
-            else:
-                entry["duration"] -= 1
-                if entry["duration"] <= 0:
-                    del self.debuffs[name]
+            elif not tick_standard_duration(entry):
+                del self.debuffs[name]
 
     def take_damage(self, amount):
         damage = max(0, amount - self.block)
@@ -62,11 +62,25 @@ class Enemy:
     def gain_block(self, amount):
         self.block += amount
     
-    def apply_buff(self, name, value):
-        self.buffs[name] = self.buffs.get(name, 0) + value
+    def apply_buff(self, name, value, duration=None):
+        if name in self.buffs:
+            self.buffs[name]["value"] += value
+            if duration is not None:
+                self.buffs[name]["duration"] += duration
+        else:
+            self.buffs[name] = {"value": value}
+            if duration is not None:
+                self.buffs[name]["duration"] = duration
 
-    def apply_debuff(self, name, duration):
-        self.debuffs[name] = self.debuffs.get(name, 0) + duration
+    def apply_debuff(self, name, duration, value=None):
+        if name in self.debuffs:
+            self.debuffs[name]["duration"] += duration
+            if value is not None:
+                self.debuffs[name]["value"] += value
+        else:
+            self.debuffs[name] = {"duration": duration}
+            if value is not None:
+                self.debuffs[name]["value"] = value
     
     def heal(self, amount):
         self.hp = min(self.max_hp, self.hp + amount)

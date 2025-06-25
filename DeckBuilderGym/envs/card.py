@@ -1,44 +1,42 @@
 import random
+from buff_n_debuff import get_buff_value, get_debuff_value, has_buff, has_debuff
 
 
 class Card:
-    def __init__(self, id, name, tag, cost, effects, card_type, ethereal=False, exhaust=False, innate=False, retain=False, shuffle_back=False):
+    def __init__(self, id, name, tag, cost, effects, card_type, target_selector=None, ethereal=False, exhaust=False, innate=False, retain=False, shuffle_back=False):
         self.id = id
         self.name = name
         self.tag = tag
         self.cost = cost
         self.effects = effects
         self.card_type = card_type
+        self.target_selector = target_selector
         self.ethereal = ethereal
         self.exhaust = exhaust
         self.innate = innate
         self.retain = retain
         self.shuffle_back = shuffle_back
 
-    def apply(self, user, target, battle=None):
+    def apply(self, user, targets, battle=None):
+        if not targets:
+            raise ValueError(f"[CardError] Card '{self.name}' expected at least one target but got: {targets}.")
+        
         for effect in self.effects:
-            effect.apply(user, target, battle=battle)
-
+            for target in targets:
+                effect.apply(user, target, battle=battle)
 
 class CardEffect:
-    def __init__(self, target_selector: str = "single_enemy"):
-        self.target_selector = target_selector  # 只是一个描述用的字段
-
     def apply(self, user, target, battle=None):
         raise NotImplementedError
 
 
 class AttackEffect(CardEffect):
-    def __init__(self, amount, target_selector=None):
-        self.target_selector = target_selector
+    def __init__(self, amount):
         self.amount = amount
 
-    def apply(self, user, enemies, battle=None):
-        if not isinstance(targets, list):
-            targets = [targets]
-        for target in targets:
-            dmg = EffectCalculator.modified_damage(self.amount, user, target)
-            target.take_damage(dmg)
+    def apply(self, user, target, battle=None):
+        damage = EffectCalculator.modified_damage(self.amount, attacker=user, defender=target)
+        target.take_damage(damage)
 
 class BlockEffect(CardEffect):
     def __init__(self, amount):
@@ -91,28 +89,26 @@ class EffectCalculator:
     def modified_damage(base_damage, attacker, defender):
         damage = base_damage
 
-        if "Strength" in attacker.buffs:
-            damage += attacker.buffs["Strength"]
+        damage += get_buff_value(attacker, "Strength")
 
-        if "Weak" in attacker.debuffs:
+        if has_debuff(attacker, "Weak"):
             damage = int(damage * 0.75)
 
-        if "Intangible" in defender.buffs:
+        if has_buff(defender, "Intangible"):
             damage = min(damage, 1)
-        
-        if "Vulnerable" in defender.buffs:
+
+        if has_debuff(defender, "Vulnerable"):
             damage = int(damage * 1.5)
 
         return max(0, damage)
-    
+
     @staticmethod
     def modified_block(base_block, user):
         block = base_block
 
-        if "Frail" in user.debuffs:
+        if has_debuff(user, "Frail"):
             block = int(block * 0.75)
 
-        if "Dexterity" in user.buffs:
-            block += user.buffs["Dexterity"]
+        block += get_buff_value(user, "Dexterity")
 
         return max(0, block)

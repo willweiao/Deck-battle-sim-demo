@@ -9,12 +9,19 @@ class SimpleStrategy:
         return None  # 没牌可打
 
     def select_target(self, card, player, enemies, battle):
-        sel = card.effects[0].target_selector
+        sel = card.target_selector
+        alive = [e for e in enemies if e.hp > 0]
+
         if sel == "all_enemies":
-            return [e for e in enemies if e.hp > 0]
+            return alive
         elif sel == "random_enemy":
-            return random.choice([e for e in enemies if e.hp > 0])
+            return [random.choice(alive)] if alive else []
         elif sel == "lowest_hp":
-            return min([e for e in enemies if e.hp > 0], key=lambda e: e.hp)
-        else:  # 默认：第一个存活敌人
-            return next((e for e in enemies if e.hp > 0), None)
+            return [min(alive, key=lambda e: e.hp)] if alive else []
+        elif sel == "single_enemy":
+            target = next((e for e in alive), None)
+            return [target] if target else []
+        elif sel == "self":
+            return [player]
+        else:
+            raise ValueError(f"Unknown target_selector: {sel}")

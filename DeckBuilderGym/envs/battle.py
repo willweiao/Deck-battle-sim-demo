@@ -64,10 +64,17 @@ class Battle:
         self.log.append(f"[Turn {self.turn}] Drew cards: {', '.join(drawn_cards)}")
         return drawn
     
-    def play_card(self, card, user, target=None):
-        target_info = f"targeting {target.name}" if target else "with no target"
+    def play_card(self, card, user, targets=None):
+        if targets:
+            target_names = ", ".join(t.name for t in targets)
+            target_info = f"targeting {target_names}"
+        else:
+            target_info = "with no target"
         self.log.append(f"[Play] {user.name} plays {card.name} {target_info}.")
-        card.apply(user, target, battle=self)
+        if not isinstance(targets, list):
+            targets = [targets]
+        #print(f"DEBUG: battle play card target {[t.name for t in targets]}")
+        card.apply(user, targets, battle=self)
         user.energy -= card.cost
 
         if getattr(card, 'exhaust', False):
@@ -112,9 +119,13 @@ class Battle:
         self.used_powers.clear()
 
     def check_victory(self):
-        if self.victory_condition:
-            return self.victory_condition.check(self.player, self.enemies)
-        return all(enemy.hp <= 0 for enemy in self.enemies)
+        if self.victory_condition.is_victory(self.player, self.enemies, self.turn):
+            self.log.append("[Battle] You win!")
+            return True
+        if self.victory_condition.is_defeat(self.player, self.enemies, self.turn):
+            self.log.append("[Battle] You lose!")
+            return True
+        return False
 
     def save_log_to_file(self):
         filename = f"battle_log_{self.battle_count}.txt"
@@ -128,11 +139,9 @@ class Battle:
             self.log.append(f"\n--- Turn {self.turn} ---")
             self.player_turn()
             if self.check_victory():
-                self.log.append("[Battle] You win!")
                 break
             self.enemy_turn()
-            if self.player.hp <= 0:
-                self.log.append("[Battle] You lose!")
+            if self.check_victory():
                 break
             self.cleanup()
             self.log_state()

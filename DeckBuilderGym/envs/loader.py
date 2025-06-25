@@ -48,6 +48,7 @@ def load_card_by_id(card_pool, card_id):
                 name=card_def["name"],
                 tag=card_def["tag"],
                 cost=card_def["cost"],
+                target_selector=card_def["target_selector"],
                 effects=effects,
                 card_type=card_def["card_type"],
                 ethereal=card_def.get("ethereal", False),
@@ -85,7 +86,8 @@ def load_enemy_by_id(enemy_id: str, json_path="data/enemy.json") -> Enemy:
                 max_hp=entry["hp"],
                 buffs=entry.get("buffs", {}),
                 debuffs=entry.get("debuffs", {}),
-                intent_sq=entry.get("intent_sq", [])
+                intent_sq=entry.get("intent_sq", []),
+                tags = entry.get("tags")
             )
     
     raise ValueError(f"[Loader Error] Enemy with id '{enemy_id}' not found.")

@@ -57,9 +57,9 @@ if __name__ == "__main__":
    
     run_simulation(
     deck_json_path=deck_json_path,
-    deck_id="deck02",
+    deck_id="deck01",
     enemygroup_json_path=enemygroup_json_path,
-    enemygroup_id="group02",
+    enemygroup_id="group01",
     num_simulations=100
 )
 

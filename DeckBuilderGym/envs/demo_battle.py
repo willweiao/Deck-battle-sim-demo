@@ -10,8 +10,8 @@ if __name__ == "__main__":
     card_pool = load_card_pool()
     deck = build_starting_deck(card_pool)
     player=Player(name="Hero", hp=50, energy=3)
-    e1 = load_enemy_by_id("SmallSlime")
-    e2 = load_enemy_by_id("MiddleSlime")
+    e1 = load_enemy_by_id("1")
+    e2 = load_enemy_by_id("2")
     enemies=[e1, e2]
-    battle = Battle(player, enemies, deck)
+    battle = Battle(player, enemies, deck,if_battle_log=True)
     battle.run()

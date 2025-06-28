@@ -67,7 +67,7 @@ def generate_reward_choices(card_pool, num_choices=3):
 
 
 def build_starting_deck(card_pool):
-    starting_ids = ["strike"] * 5 + ["block"] * 5 + ["bash"] + ["burn"] + ["cleave"]+["iron_wave"]+["twin_strike"]
+    starting_ids = ["1"] * 5 + ["2"] * 5 + ["3"] + ["4"] + ["5"]+["6"]+["7"]
     return [load_card_by_id(card_pool, cid) for cid in starting_ids]
 
 
@@ -81,7 +81,7 @@ def load_enemy_by_id(enemy_id: str, json_path="data/enemy.json") -> Enemy:
         if entry["id"] == enemy_id:
             return Enemy(
                 id=entry["id"],
-                name=entry["id"],
+                name=entry["name"],
                 hp=entry["hp"],
                 max_hp=entry["hp"],
                 buffs=entry.get("buffs", {}),
@@ -91,3 +91,18 @@ def load_enemy_by_id(enemy_id: str, json_path="data/enemy.json") -> Enemy:
             )
     
     raise ValueError(f"[Loader Error] Enemy with id '{enemy_id}' not found.")
+
+
+def load_deck_by_id(deck_json_path, deck_id, card_pool):
+    with open(deck_json_path, "r") as f:
+        deck_data = json.load(f)
+    entry = deck_data[deck_id]
+    return [load_card_by_id(card_pool, cid) for cid in entry["cards"]], entry["name"]
+
+
+def load_enemy_group(group_path, group_id):
+    with open(group_path, "r") as f:
+        group_data = json.load(f)
+    enemy_ids = group_data[group_id]["enemy_ids"]
+    enemy_objs = [load_enemy_by_id(eid) for eid in enemy_ids]
+    return enemy_objs, group_data[group_id]["name"]

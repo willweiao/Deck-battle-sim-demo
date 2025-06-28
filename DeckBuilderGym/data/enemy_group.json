@@ -1,0 +1,10 @@
+{
+  "group01": {
+    "name": "Slime_Duo",
+    "enemy_ids": ["1", "2"]
+  },
+  "group02": {
+    "name": "Slime_Trio",
+    "enemy_ids": ["1", "2", "3"]
+  }
+}

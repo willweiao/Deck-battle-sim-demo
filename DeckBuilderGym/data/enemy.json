@@ -1,20 +1,32 @@
 [
     {
-        "id": "SmallSlime",
+        "id": "1",
+        "name":"Small Slime",
         "hp": 20,
         "intent_sq":[
             {"type": "debuff", "name": "Weak", "duration": 2},
             {"type": "debuff", "name": "Frail", "duration": 2},
-            {"type": "attack", "value": 6}
+            {"type": "attack", "value": 10}
         ]
     },
     {
-        "id": "MiddleSlime",
+        "id": "2",
+        "name":"Middle Slime",
         "hp": 40,
         "intent_sq":[
             {"type": "debuff", "name": "Vulnerable", "duration": 2},
             {"type": "attack", "value": 10},
-            {"type": "attack", "value": 18}
+            {"type": "attack", "value": 14}
+        ]
+    },
+    {
+        "id": "3",
+        "name": "Large Slime",
+        "hp": 60,
+        "intent_sq":[
+            {"type": "attack", "value": 12},
+            {"type": "attack", "value": 18},
+            {"type": "debuff", "name": "Vulnerable", "duration": 2}
         ]
     }
 ]

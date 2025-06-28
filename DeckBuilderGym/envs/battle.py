@@ -12,13 +12,14 @@ class VictoryCondition:
     
 
 class Battle:
-    def __init__(self, player, enemies, deck, draw_per_turn:int=5, hand_limit:int=10, victory_condition=None):
+    def __init__(self, player, enemies, deck, draw_per_turn:int=5, hand_limit:int=10, victory_condition=None, if_battle_log=False):
         self.player = player
         self.enemies = enemies
         self.deck = deck
         self.original_deck = deck
         self.hand_limit = hand_limit
         self.draw_per_turn = draw_per_turn
+        self.if_battle_log= if_battle_log
         self.hand = []
         self.discard_pile = []
         self.exhaust_pile = []
@@ -26,6 +27,10 @@ class Battle:
         self.turn = 0
         self.victory_condition = victory_condition or VictoryCondition()
         self.log = []
+        self.simulation_log={
+            "turns":[]
+        }
+        self.running_log = None
         self.battle_count = self._get_battle_count()
     
     def _get_battle_count(self):
@@ -45,8 +50,9 @@ class Battle:
         drawn_cards = []
         for _ in range(num):
             if len(self.hand) >= hand_limit:
-                self.log.append("[Draw] Hand limit reached. Cannot draw more cards.")
-                break
+                if self.if_battle_log:
+                    self.log.append("[Draw] Hand limit reached. Cannot draw more cards.")
+                    break
 
             if not self.deck and self.discard_pile:
                 self.deck = self.discard_pile[:]
@@ -61,18 +67,26 @@ class Battle:
             else:
                 break
 
-        self.log.append(f"[Turn {self.turn}] Drew cards: {', '.join(drawn_cards)}")
+        if self.if_battle_log:
+            self.log.append(f"[Turn {self.turn}] Drew cards: {', '.join(drawn_cards)}")
         return drawn
     
     def play_card(self, card, user, targets=None):
-        if targets:
-            target_names = ", ".join(t.name for t in targets)
-            target_info = f"targeting {target_names}"
-        else:
-            target_info = "with no target"
-        self.log.append(f"[Play] {user.name} plays {card.name} {target_info}.")
         if not isinstance(targets, list):
             targets = [targets]
+        if self.if_battle_log:
+            if targets:
+                target_names = ", ".join(t.name for t in targets)
+                target_info = f"targeting {target_names}"
+            else:
+                target_info = "with no target"
+            self.log.append(f"[Play] {user.name} plays {card.name} {target_info}.")
+        else:
+            target_ids = [getattr(t, "id", "unknown") for t in targets]
+            self.running_log["actions"].append({
+                "card":card.id,
+                "targets":target_ids
+            })
         #print(f"DEBUG: battle play card target {[t.name for t in targets]}")
         card.apply(user, targets, battle=self)
         user.energy -= card.cost
@@ -92,12 +106,24 @@ class Battle:
 
     def player_turn(self):
         self.player.begin_turn()
-        self.log.append(f"\n[Turn {self.turn}] Player's turn begins.")
-        self.draw_cards(self.draw_per_turn)
+        if self.if_battle_log:
+            self.log.append(f"\n[Turn {self.turn}] Player's turn begins.")
+            self.draw_cards(self.draw_per_turn)
+        else:
+            self.draw_cards(self.draw_per_turn)
+            self.running_log = {
+                "turn": self.turn,
+                "hand": [card.id for card in self.hand],
+                "actions":[]
+                }
         self.player.play_cards(self.hand, self.enemies, self)
+        if not self.if_battle_log:
+            self.running_log["hp_left"]=self.player.hp
+            self.simulation_log["turns"].append(self.running_log)
     
     def enemy_turn(self):
-        self.log.append(f"[Turn {self.turn}] Enemies' turn begins.")
+        if self.if_battle_log:
+            self.log.append(f"[Turn {self.turn}] Enemies' turn begins.")
         for enemy in self.enemies:
             if enemy.hp > 0:
                 enemy.begin_turn()
@@ -120,10 +146,16 @@ class Battle:
 
     def check_victory(self):
         if self.victory_condition.is_victory(self.player, self.enemies, self.turn):
-            self.log.append("[Battle] You win!")
+            if self.if_battle_log:
+                self.log.append("[Battle] You win!")
+            else:
+                self.simulation_log["win"]=True
             return True
         if self.victory_condition.is_defeat(self.player, self.enemies, self.turn):
-            self.log.append("[Battle] You lose!")
+            if self.if_battle_log:
+                self.log.append("[Battle] You lose!")
+            else:
+                self.simulation_log["win"]=False
             return True
         return False
 
@@ -136,7 +168,8 @@ class Battle:
     def run(self):
         while True:
             self.turn += 1
-            self.log.append(f"\n--- Turn {self.turn} ---")
+            if self.if_battle_log:
+                self.log.append(f"\n--- Turn {self.turn} ---")
             self.player_turn()
             if self.check_victory():
                 break
@@ -144,11 +177,16 @@ class Battle:
             if self.check_victory():
                 break
             self.cleanup()
-            self.log_state()
-        
+            if self.if_battle_log:
+                self.log_state()
+        self.simulation_log["final_hp"] = self.player.hp
+        self.simulation_log["turns_taken"] = self.turn
         self.cleanup_after_battle()
+        
+        if "win" not in self.simulation_log:
+            self.simulation_log["win"] = False
 
-        for entry in self.log:
-            print(entry)
-
-        self.save_log_to_file()
+        if self.if_battle_log:
+            for entry in self.log:
+                print(entry)
+            self.save_log_to_file()

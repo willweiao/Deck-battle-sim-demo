@@ -3,6 +3,7 @@ import json
 from copy import deepcopy
 from battle import Battle
 from player import Player
+from player_strategy import RandomStrategy
 from loader import load_card_pool, load_deck_by_id, load_enemy_group
 
 
@@ -28,7 +29,7 @@ def run_simulation(deck_json_path, deck_id, enemygroup_json_path, enemygroup_id,
     }
 
     for _ in range(num_simulations):
-        player = Player(name="Hero", hp=50, energy=3)
+        player = Player(name="Hero", hp=50, energy=3, strategy=RandomStrategy())
         enemies = [deepcopy(e) for e in enemies_template]
         battle = Battle(player, enemies, deepcopy(deck), if_battle_log=False)
 
@@ -56,11 +57,11 @@ if __name__ == "__main__":
     enemygroup_json_path = os.path.join(base_dir, "data", "enemy_group.json")
    
     run_simulation(
-    deck_json_path=deck_json_path,
-    deck_id="deck01",
-    enemygroup_json_path=enemygroup_json_path,
-    enemygroup_id="group01",
-    num_simulations=100
-)
+        deck_json_path=deck_json_path,
+        deck_id="deck01",
+        enemygroup_json_path=enemygroup_json_path,
+        enemygroup_id="group01",
+        num_simulations=100
+    )
 
 

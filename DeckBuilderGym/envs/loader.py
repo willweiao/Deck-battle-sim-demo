@@ -1,7 +1,7 @@
 import os
 import json
 import random
-from card import Card, AttackEffect, BlockEffect, BuffEffect, DebuffEffect
+from card import Card, AttackEffect, BlockEffect, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, DoubleBlockEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
 from enemy import Enemy 
 
 
@@ -20,13 +20,51 @@ def parse_effect(effect_dict):
         return BuffEffect(
             name=effect_dict["name"],
             value=effect_dict["value"],
+            temporary=effect_dict.get("temporary", False)
             #target_self=effect_dict.get("target_self", True)
         )
     elif effect_type == "debuff":
         return DebuffEffect(
             name=effect_dict["name"],
             duration=effect_dict["duration"],
+            temporary=effect_dict.get("temporary", False)
             #target_user=effect_dict.get("target_user", False)
+        )
+    elif effect_type == "draw":
+        return DrawEffect(
+            amount=effect_dict["value"]
+        )
+    elif effect_type == "energy":
+        return EnergyEffect(
+            amount=effect_dict["value"]
+        )
+    elif effect_type == "hp":
+        return HPEffect(
+            amount=effect_dict["value"]
+        )
+    elif effect_type == "power":
+        return PowerEffect(
+            name=effect_dict["name"]
+        )
+    elif effect_type =="double_block":
+        return DoubleBlockEffect()
+    elif effect_type == "exhaust_by_type":
+        return ExhaustByTypeEffect(
+            block_per_card=effect_dict.get("block_per_card", 0),
+            damage_per_card=effect_dict.get("damage_per_card", 0),
+            exclude_types=effect_dict.get("exclude_types", []),
+            include_types=effect_dict.get("include_types")
+        )
+    elif effect_type == "status":
+        return StatusEffect(
+            name=effect_dict["name"],
+            temporary=effect_dict.get("temporary", True)
+        )
+    elif effect_type == "generate_card":
+        return GenerateCardEffect(
+            card_id=effect_dict["card_id"],
+            amount=effect_dict.get("amount", 1),
+            destination=effect_dict.get("destination", "hand")
         )
     else:
         raise ValueError(f"Unknown effect type: {effect_type}")
@@ -51,6 +89,7 @@ def load_card_by_id(card_pool, card_id):
                 target_selector=card_def["target_selector"],
                 effects=effects,
                 card_type=card_def["card_type"],
+                playable=card_def.get("playable", True),
                 ethereal=card_def.get("ethereal", False),
                 exhaust=card_def.get("exhaust", False),
                 innate=card_def.get("innate", False),

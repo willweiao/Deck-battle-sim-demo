@@ -12,20 +12,25 @@ class VictoryCondition:
     
 
 class Battle:
-    def __init__(self, player, enemies, deck, draw_per_turn:int=5, hand_limit:int=10, victory_condition=None, if_battle_log=False):
+    def __init__(self, player, enemies, deck,
+                draw_per_turn:int=5, hand_limit:int=10,
+                card_pool=None,
+                victory_condition=None, 
+                if_battle_log=False):
         self.player = player
         self.enemies = enemies
         self.deck = deck
         self.original_deck = deck
-        self.hand_limit = hand_limit
         self.draw_per_turn = draw_per_turn
+        self.hand_limit = hand_limit
+        self.card_pool = card_pool or {}
+        self.victory_condition = victory_condition or VictoryCondition()
         self.if_battle_log= if_battle_log
         self.hand = []
         self.discard_pile = []
         self.exhaust_pile = []
         self.used_powers = []
         self.turn = 0
-        self.victory_condition = victory_condition or VictoryCondition()
         self.log = []
         self.simulation_log={
             "turns":[]
@@ -48,24 +53,29 @@ class Battle:
     def draw_cards(self, num, hand_limit=10):
         drawn = 0
         drawn_cards = []
-        for _ in range(num):
-            if len(self.hand) >= hand_limit:
-                if self.if_battle_log:
-                    self.log.append("[Draw] Hand limit reached. Cannot draw more cards.")
+        if self.player.status_flags.get("NoDraw", {}).get("value"):
+            if self.if_battle_log:
+                self.log.append("Prevented from drawing cards this turn.")
+            return
+        else:
+            for _ in range(num):
+                if len(self.hand) >= hand_limit:
+                    if self.if_battle_log:
+                        self.log.append("[Draw] Hand limit reached. Cannot draw more cards.")
                     break
 
-            if not self.deck and self.discard_pile:
-                self.deck = self.discard_pile[:]
-                random.shuffle(self.deck)
-                self.discard_pile.clear()
+                if not self.deck and self.discard_pile:
+                    self.deck = self.discard_pile[:]
+                    random.shuffle(self.deck)
+                    self.discard_pile.clear()
             
-            if self.deck:
-                card = self.deck.pop()
-                self.hand.append(card)
-                drawn_cards.append(card.name)
-                drawn += 1
-            else:
-                break
+                if self.deck:
+                    card = self.deck.pop()
+                    self.hand.append(card)
+                    drawn_cards.append(card.name)
+                    drawn += 1
+                else:
+                    break
 
         if self.if_battle_log:
             self.log.append(f"[Turn {self.turn}] Drew cards: {', '.join(drawn_cards)}")
@@ -117,6 +127,7 @@ class Battle:
                 "actions":[]
                 }
         self.player.play_cards(self.hand, self.enemies, self)
+        self.player.end_turn()
         if not self.if_battle_log:
             self.running_log["hp_left"]=self.player.hp
             self.simulation_log["turns"].append(self.running_log)
@@ -130,13 +141,27 @@ class Battle:
                 enemy.perform_action(self.player)
         
     def cleanup(self):
+        cards_to_discard = []
+        cards_to_exhaust = []
+
         for card in self.hand:
-            if getattr(card, 'ethereal', False):
-                self.exhaust_pile.append(card)
+            if card.name == "Burn":
+                self.player.take_damage(2)
+                cards_to_discard.append(card)
+            elif getattr(card, 'ethereal', False):
+                cards_to_exhaust.append(card)
             elif not getattr(card, 'retain', False):
-                self.discard_pile.append(card)
-        self.hand.clear()
+                cards_to_discard.append(card)
+
+        for card in cards_to_discard:
+            self.hand.remove(card)
+            self.discard_pile.append(card)
+
+        for card in cards_to_exhaust:
+            self.hand.remove(card)
+            self.exhaust_pile.append(card)
     
+
     def cleanup_after_battle(self):
         self.deck = self.original_deck[:]
         self.hand = []
@@ -173,10 +198,10 @@ class Battle:
             self.player_turn()
             if self.check_victory():
                 break
+            self.cleanup()
             self.enemy_turn()
             if self.check_victory():
                 break
-            self.cleanup()
             if self.if_battle_log:
                 self.log_state()
         self.simulation_log["final_hp"] = self.player.hp

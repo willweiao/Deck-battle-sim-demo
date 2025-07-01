@@ -10,9 +10,15 @@ def has_buff(entity, name):
 def has_debuff(entity, name):
     return name in entity.debuffs
 
+# buff类
 def apply_regen(entity, entry):
     entity.heal(entry["value"])
 
+def apply_strength_gain(entity, entry):
+    gain = entry.get("value", 0)
+    entity.strength += gain
+
+# debuff类
 def tick_poison(entity, entry):
     damage = entry["value"]
     entity.hp -= damage
@@ -20,8 +26,7 @@ def tick_poison(entity, entry):
     return entry["value"] > 0
 
 def tick_standard_duration(entry):
-    if "duration" not in entry:
-        return True
-    
-    entry["duration"] -= 1
-    return entry["duration"] > 0
+    if "duration" in entry:
+        entry["duration"] -= 1
+        return entry["duration"] > 0
+    return True

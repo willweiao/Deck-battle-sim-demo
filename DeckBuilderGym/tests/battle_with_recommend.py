@@ -24,7 +24,7 @@ if __name__ == "__main__":
     
     # start battle 
     player = Player(name="Hero", hp=50, energy=3, strategy=ManualStrategy())
-    battle = Battle(player, enemies, deck, if_battle_log=True)
+    battle = Battle(player, enemies, deck, card_pool=card_pool, if_battle_log=True)
 
     turn = 0
     while True:
@@ -63,7 +63,7 @@ if __name__ == "__main__":
                 print(f"{i+1}. {card.name} → targets: {targets}")
 
         # choose a card to play, you can choose a recommendation result or 
-        selected = input("Choose [1-10] for hand, or r1/r2/r3, or 'p' to skip: ").strip().lower()
+        selected = input("Choose [1-10] for hand, or r1/r2/r3 for the recommendation results by order, or 'p' to skip: ").strip().lower()
         if selected == "p":
             break
         ## select a recommended result

@@ -13,5 +13,5 @@ if __name__ == "__main__":
     e1 = load_enemy_by_id("1")
     e2 = load_enemy_by_id("2")
     enemies=[e1, e2]
-    battle = Battle(player, enemies, deck,if_battle_log=True)
+    battle = Battle(player, enemies, deck, card_pool=card_pool, if_battle_log=True)
     battle.run()

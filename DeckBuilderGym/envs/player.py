@@ -1,9 +1,15 @@
 from card import EffectCalculator
 from player_strategy import SimpleStrategy
-from buff_n_debuff import apply_regen, tick_poison, tick_standard_duration
+from buff_n_debuff import apply_regen, apply_strength_gain, tick_poison, tick_standard_duration
 
 class Player:
-    def __init__(self, name, hp, energy, max_hp=None, max_energy=3, buffs=None, debuffs=None, strategy=None):
+    def __init__(self, name, hp, energy, 
+                 max_hp=None, 
+                 max_energy=3, 
+                 buffs=None, 
+                 debuffs=None, 
+                 powers=None, 
+                 strategy=None):
         self.name = name
         self.hp = hp
         self.max_hp = max_hp or hp
@@ -11,11 +17,14 @@ class Player:
         self.max_energy = max_energy
         self.buffs = buffs or {}
         self.debuffs = debuffs or {}
+        self.powers = powers or {}
+        self.status_flags = {}
         self.strategy = strategy or SimpleStrategy()
         self.block = 0
     
     def begin_turn(self):
-        self.block = 0
+        if self.has_power("Barricade"):
+            self.block = 0
         self.energy = self.max_energy
         self.tick_buffs_and_debuffs()
     
@@ -26,6 +35,9 @@ class Player:
         for name in list(self.debuffs.keys()):
             if self.debuffs[name].get("temporary"):
                 del self.debuffs[name]
+        for name in list(self.status_flags.keys()):
+            if self.status_flags[name].get("temporary"):
+                del self.status_flags[name]
 
     def take_damage(self, amount):
         damage = max(0, amount - self.block)
@@ -61,13 +73,18 @@ class Player:
     def heal(self, amount):
         self.hp = min(self.max_hp, self.hp + amount)
     
+    def has_power(self, name):
+        return name in self.powers
+
     def tick_buffs_and_debuffs(self):
         # Buffs
         for name in list(self.buffs.keys()):
             entry = self.buffs[name]
 
             if name == "Regen":
-                self.heal(entry["value"])
+                apply_regen(self,entry)
+            elif name == "StrengthGain":
+                apply_strength_gain(self, entry)
 
             if not tick_standard_duration(entry):
                 del self.buffs[name]
@@ -77,12 +94,9 @@ class Player:
             entry = self.debuffs[name]
 
             if name == "Poison":
-                damage = entry["value"]
-                self.hp -= damage
-                entry["value"] -= 1
-                if entry["value"] <= 0:
-                    del self.debuffs[name]
-            elif not tick_standard_duration(entry):
+                tick_poison(self, entry)
+            
+            if not tick_standard_duration(entry):
                 del self.debuffs[name]
 
 
@@ -91,6 +105,10 @@ class Player:
             card = self.strategy.select_card(hand, self, enemies, battle)
             if card is None:
                 break
+            if not getattr(card, "playable", True):
+                if battle.if_battle_log:
+                    battle.log.append(f"[Skip] {card.name} is not playable.")
+                continue
 
             targets = self.strategy.select_target(card, self, enemies, battle)
             if not targets:

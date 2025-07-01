@@ -7,7 +7,10 @@ from player_strategy import RandomStrategy
 from loader import load_card_pool, load_deck_by_id, load_enemy_group
 
 
-def run_simulation(deck_json_path, deck_id, enemygroup_json_path, enemygroup_id, num_simulations=100, output_dir=None):
+def run_simulation(deck_json_path, deck_id, 
+                   enemygroup_json_path, enemygroup_id, 
+                   num_simulations=100, 
+                   output_dir=None):
     
     if output_dir is None:
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -31,7 +34,7 @@ def run_simulation(deck_json_path, deck_id, enemygroup_json_path, enemygroup_id,
     for _ in range(num_simulations):
         player = Player(name="Hero", hp=50, energy=3, strategy=RandomStrategy())
         enemies = [deepcopy(e) for e in enemies_template]
-        battle = Battle(player, enemies, deepcopy(deck), if_battle_log=False)
+        battle = Battle(player, enemies, deepcopy(deck), card_pool=card_pool,if_battle_log=False)
 
         battle.run()
 

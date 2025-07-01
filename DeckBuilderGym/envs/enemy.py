@@ -2,7 +2,11 @@ from card import EffectCalculator
 from buff_n_debuff import apply_regen, tick_poison, tick_standard_duration
 
 class Enemy:
-    def __init__(self, id, name, hp, max_hp, buffs=None, debuffs=None, intent_sq=None, tags=None):
+    def __init__(self, id, name, hp, max_hp, 
+                 buffs=None, 
+                 debuffs=None, 
+                 intent_sq=None, 
+                 tags=None):
         self.id = id
         self.name = name or id
         self.hp = hp

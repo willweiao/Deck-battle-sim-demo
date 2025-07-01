@@ -3,7 +3,7 @@ import random
 class SimpleStrategy:
     def select_card(self, hand, player, enemies, battle):
         for card in hand:
-            if card.cost <= player.energy:
+            if getattr(card, "playable", True) and card.cost <= player.energy:
                 return card
         return None  
 
@@ -27,8 +27,8 @@ class SimpleStrategy:
         
 class RandomStrategy:
     def select_card(self, hand, player, enemies, battle):
-        playable = [card for card in hand if card.cost <= player.energy]
-        return random.choice(playable) if playable else None
+        can_play = [card for card in hand if card.cost <= player.energy and getattr(card, "playable", True)]
+        return random.choice(can_play) if can_play else None
 
     def select_target(self, card, player, enemies, battle):
         sel = card.target_selector

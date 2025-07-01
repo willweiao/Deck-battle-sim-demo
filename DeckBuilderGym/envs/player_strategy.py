@@ -3,9 +3,14 @@ import random
 class SimpleStrategy:
     def select_card(self, hand, player, enemies, battle):
         for card in hand:
-            if getattr(card, "playable", True) and card.cost <= player.energy:
+            if not getattr(card, "playable", True):
+                continue
+
+            if card.cost == "x":
                 return card
-        return None  
+            elif isinstance(card.cost, (int, float)) and card.cost <= player.energy:
+                return card
+        return None
 
     def select_target(self, card, player, enemies, battle):
         sel = card.target_selector

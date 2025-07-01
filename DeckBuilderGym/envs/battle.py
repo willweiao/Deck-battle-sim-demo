@@ -100,7 +100,11 @@ class Battle:
             })
         #print(f"DEBUG: battle play card target {[t.name for t in targets]}")
         card.apply(user, targets, battle=self)
-        user.energy -= card.cost
+        if card.cost =="x":
+            actual_cost=user.energy
+        else:
+            actual_cost=card.cost
+        user.energy -= actual_cost
 
         if getattr(card, 'exhaust', False):
             self.exhaust_pile.append(card)

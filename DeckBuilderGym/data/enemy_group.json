@@ -1,4 +1,8 @@
 {
+  "group00":{
+    "name": "DummyGroup",
+    "enemy_ids":["0", "0", "0"]
+  },
   "group01": {
     "name": "Slime_Duo",
     "enemy_ids": ["1", "2"]

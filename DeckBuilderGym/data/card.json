@@ -479,5 +479,38 @@
         "effects":[
             {"effect":"power", "name":"Brutality", "value":1}
         ]
-    }
+    },
+    {
+        "id":"39",
+        "name":"Body Slam+",
+        "rarity":"common",
+        "cost":0,
+        "card_type":"attack",
+        "target_selector":"single_enemy",
+        "effects":[
+            {"effect":"block_attack"}
+        ]
+    },
+    {
+        "id":"40",
+        "name":"Bludgeon",
+        "rarity":"super_rare",
+        "cost":3,
+        "card_type":"attack",
+        "target_selector":"single_enemy",
+        "effects":[
+            {"effect":"attack", "value":32}
+        ]
+    },
+    {
+        "id":"41",
+        "name":"Whirlwind",
+        "rarity":"rare",
+        "cost":"x",
+        "card_type":"attack",
+        "target_selector":"all_enemies",
+        "effects":[
+            {"effect":"x_attack", "value":5}
+        ]
+        }
 ]

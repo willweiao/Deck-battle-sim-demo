@@ -1,7 +1,7 @@
 import os
 import json
 import random
-from card import Card, AttackEffect, BlockEffect, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, ReaperEffect, DoubleBlockEffect, DoubleStrengthEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
+from card import Card, AttackEffect,XAttackEffect,BlockEffect,BlockBasedAttack, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, ReaperEffect, DoubleBlockEffect, DoubleStrengthEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
 from enemy import Enemy 
 
 
@@ -11,6 +11,10 @@ def parse_effect(effect_dict):
     if effect_type == "attack":
         return AttackEffect(
             amount=effect_dict["value"]
+        )
+    elif effect_type == "x_attack":
+        return XAttackEffect(
+            damage_per_hit=effect_dict["value"]
         )
     elif effect_type == "block":
         return BlockEffect(
@@ -73,6 +77,8 @@ def parse_effect(effect_dict):
             amount=effect_dict.get("amount", 1),
             destination=effect_dict.get("destination", "hand")
         )
+    elif effect_type == "block_attack":
+        return BlockBasedAttack()
     else:
         raise ValueError(f"Unknown effect type: {effect_type}")
 

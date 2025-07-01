@@ -35,6 +35,7 @@ class Card:
                 target.prev_hp = target.hp
                 effect.apply(user, target, battle=battle)
 
+
 class CardEffect:
     def apply(self, user, target, battle=None):
         raise NotImplementedError
@@ -57,6 +58,15 @@ class BlockEffect(CardEffect):
         user.gain_block(block)
 
 
+class BlockBasedAttack(CardEffect):
+    def __init__(self):
+        super().__init__()
+
+    def apply(self, user, target, battle=None):
+        damage = EffectCalculator.modified_damage(user.block, attacker=user, defender=target)
+        target.take_damage(damage)
+
+
 class BuffEffect(CardEffect):
     def __init__(self, name, value):
         self.name = name
@@ -75,6 +85,20 @@ class DebuffEffect(CardEffect):
         target.apply_debuff(self.name, self.duration)
 
 
+class DoubleBlockEffect(CardEffect):
+    def apply(self, user, target, battle=None):
+        user.block *= 2
+
+
+class DoubleStrengthEffect(CardEffect):
+    def apply(self, user, target, battle=None):
+        current = get_buff_value(user, "Strength")
+        if current > 0:
+            user.buffs["Strength"]["value"] += current
+        else:
+            return
+
+
 class DrawEffect(CardEffect):
     def __init__(self, amount):
         self.amount = amount
@@ -91,39 +115,6 @@ class EnergyEffect(CardEffect):
 
     def apply(self, user, target, battle=None):
         user.energy += self.amount
-
-
-class HPEffect(CardEffect):
-    def __init__(self, amount):
-        self.amount = amount
-
-    def apply(self, user, target, battle=None):
-        hp_changed = user.hp + self.amount
-        user.hp=min(hp_changed, user.max_hp)
-
-
-class ReaperEffect(CardEffect):
-    def __init__(self, ratio=1):
-        self.ratio =ratio
-    
-    def apply(self, user, target, battle=None):
-        hp_reaped = max(0, target._prev_hp - max(target.hp,0))
-        hp_new= user.hp + hp_reaped * self.ratio
-        user.hp=min(hp_new, user.max_hp)
-
-
-class DoubleStrengthEffect(CardEffect):
-    def apply(self, user, targets, battle=None):
-        current = get_buff_value(user, "Strength")
-        if current > 0:
-            user.buffs["Strength"]["value"] += current
-        else:
-            return
-
-
-class DoubleBlockEffect(CardEffect):
-    def apply(self, user, targets, battle=None):
-        user.block *= 2
 
 
 class ExhaustByTypeEffect(CardEffect):
@@ -157,39 +148,13 @@ class ExhaustByTypeEffect(CardEffect):
                 t.take_damage(count*self.damage_per_card)
 
 
-class PowerEffect(CardEffect):
-    def __init__(self, name, value=1):
-        self.name = name
-        self.value = value
-
-    def apply(self, user, targets, battle=None):
-        if self.name in user.powers:
-            user.powers[self.name] += self.value
-        else:
-            user.powers[self.name] = self.value
-
-
-class StatusEffect(CardEffect):
-    def __init__(self, name, temporary=True):
-        self.name = name
-        self.temporary = temporary
-
-    def apply(self, user, targets, battle=None):
-        if "status_flags" not in user.__dict__:
-            user.status_flags = {}
-        user.status_flags[self.name] = {
-            "value": True,
-            "temporary": self.temporary
-        }
-
-
 class GenerateCardEffect(CardEffect):
     def __init__(self, card_id, amount=1, destination="hand"):
         self.card_id = card_id
         self.amount = amount
         self.destination = destination  # "hand", "draw", "discard"
 
-    def apply(self, user, targets, battle=None):
+    def apply(self, user, target, battle=None):
         card_template = battle.card_pool[self.card_id]  
         for _ in range(self.amount):
             card = deepcopy(card_template)
@@ -206,6 +171,62 @@ class GenerateCardEffect(CardEffect):
 
             if battle.if_battle_log:
                 battle.log.append(f"[Effect] Created {card.name} in {self.destination}.")
+
+
+class HPEffect(CardEffect):
+    def __init__(self, amount):
+        self.amount = amount
+
+    def apply(self, user, target, battle=None):
+        hp_changed = user.hp + self.amount
+        user.hp=min(hp_changed, user.max_hp)
+
+
+class PowerEffect(CardEffect):
+    def __init__(self, name, value=1):
+        self.name = name
+        self.value = value
+
+    def apply(self, user, target, battle=None):
+        if self.name in user.powers:
+            user.powers[self.name] += self.value
+        else:
+            user.powers[self.name] = self.value
+
+
+class ReaperEffect(CardEffect):
+    def __init__(self, ratio=1):
+        self.ratio =ratio
+    
+    def apply(self, user, target, battle=None):
+        hp_reaped = max(0, target._prev_hp - max(target.hp,0))
+        hp_new= user.hp + hp_reaped * self.ratio
+        user.hp=min(hp_new, user.max_hp)
+
+
+class StatusEffect(CardEffect):
+    def __init__(self, name, temporary=True):
+        self.name = name
+        self.temporary = temporary
+
+    def apply(self, user, target, battle=None):
+        if "status_flags" not in user.__dict__:
+            user.status_flags = {}
+        user.status_flags[self.name] = {
+            "value": True,
+            "temporary": self.temporary
+        }
+
+
+class XAttackEffect(CardEffect):
+    def __init__(self,damage_per_hit):
+        self.damage_per_hit = damage_per_hit
+
+    def apply(self, user, target, battle=None):
+        x_value=user.energy
+        for _ in range(x_value):
+            damage = EffectCalculator.modified_damage(self.damage_per_hit, attacker=user, defender=target)
+            target.take_damage(damage)
 
 
 class EffectCalculator:

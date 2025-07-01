@@ -1,5 +1,13 @@
 [
     {
+        "id":"0",
+        "name":"Dummy",
+        "hp":20,
+        "intent_sq":[
+            {"type":"block", "value":0}
+        ]
+    },
+    {
         "id": "1",
         "name":"Small Slime",
         "hp": 20,

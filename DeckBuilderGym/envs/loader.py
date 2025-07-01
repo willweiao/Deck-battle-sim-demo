@@ -1,7 +1,7 @@
 import os
 import json
 import random
-from card import Card, AttackEffect, BlockEffect, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, DoubleBlockEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
+from card import Card, AttackEffect, BlockEffect, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, ReaperEffect, DoubleBlockEffect, DoubleStrengthEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
 from enemy import Enemy 
 
 
@@ -42,12 +42,19 @@ def parse_effect(effect_dict):
         return HPEffect(
             amount=effect_dict["value"]
         )
+    elif effect_type == "reaper":
+        return ReaperEffect(
+            ratio=effect_dict.get("ratio", 1)
+        )
     elif effect_type == "power":
         return PowerEffect(
-            name=effect_dict["name"]
+            name=effect_dict["name"],
+            value=effect_dict.get("value", 1)
         )
     elif effect_type =="double_block":
         return DoubleBlockEffect()
+    elif effect_type =="double_strength":
+        return DoubleStrengthEffect()
     elif effect_type == "exhaust_by_type":
         return ExhaustByTypeEffect(
             block_per_card=effect_dict.get("block_per_card", 0),

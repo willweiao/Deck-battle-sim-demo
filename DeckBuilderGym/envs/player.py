@@ -22,12 +22,19 @@ class Player:
         self.strategy = strategy or SimpleStrategy()
         self.block = 0
     
-    def begin_turn(self):
-        if self.has_power("Barricade"):
+    def begin_turn(self, battle=None):
+        if not self.has_power("Barricade"):
             self.block = 0
         self.energy = self.max_energy
         self.tick_buffs_and_debuffs()
-    
+        self.trigger_begin_turn_powers(battle=battle)
+
+    def trigger_begin_turn_powers(self, battle):
+        if "Brutality" in self.powers:
+            value = self.powers["Brutality"]
+            self.take_damage(value, source="self")
+            battle.draw_cards(value)
+
     def end_turn(self):
         for name in list(self.buffs.keys()):
             if self.buffs[name].get("temporary"):
@@ -39,11 +46,19 @@ class Player:
             if self.status_flags[name].get("temporary"):
                 del self.status_flags[name]
 
-    def take_damage(self, amount):
+    def take_damage(self, amount, source="enemy"):
         damage = max(0, amount - self.block)
         self.hp -= damage
         self.block = max(0, self.block - amount)
-    
+
+        if source == "self" and "Rupture" in self.powers:
+            strength_gain = self.powers["Rupture"]
+
+            if "Strength" not in self.buffs:
+                self.buffs["Strength"] = {"value": 0}
+
+            self.buffs["Strength"]["value"] += strength_gain
+
     def gain_block(self, amount):
         self.block += amount
     
@@ -75,6 +90,14 @@ class Player:
     
     def has_power(self, name):
         return name in self.powers
+    
+    def trigger_on_exhaust(self, battle=None):
+        if "GainBlockOnExhaust" in self.powers:
+            block_per_exhaust = self.powers["GainBlockOnExhaust"]
+            self.block += block_per_exhaust
+        if "DrawOnExhaust" in self.powers:
+            draw_per_exhaust = self.powers["DrawOnExhaust"]
+            battle.draw_cards(draw_per_exhaust)
 
     def tick_buffs_and_debuffs(self):
         # Buffs
@@ -99,6 +122,21 @@ class Player:
             if not tick_standard_duration(entry):
                 del self.debuffs[name]
 
+    def after_draw_card(self, card, battle=None):
+        if "Evolve" in self.powers:
+            trigger_types = {"status", "curse"}
+            if card.card_type in trigger_types:
+                amount = self.powers["Evolve"]
+                if battle:
+                    battle.draw_cards(amount)
+        if "FireBreath" in self.powers:
+            trigger_types = {"status", "curse"}
+            if card.card_type in trigger_types:
+                amount = self.powers["FireBreath"]
+                if battle:
+                    for enemy in battle.enemies:
+                        if enemy.hp > 0:
+                            enemy.take_damage(amount)
 
     def play_cards(self, hand, enemies, battle):
         while True:

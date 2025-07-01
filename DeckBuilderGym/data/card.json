@@ -216,7 +216,7 @@
         "card_type":"power",
         "target_selector":"self",
         "effects":[
-            {"effect":"power", "name":"Barricade"}
+            {"effect":"power", "name":"Barricade", "value":1}
         ]
     },
     {
@@ -378,34 +378,106 @@
     },
     {
         "id":"30",
-        "name":"Reaper"
+        "name":"Reaper",
+        "rarity":"super_rare",
+        "cost":2,
+        "card_type":"attack",
+        "target_selector":"all_enemies",
+        "effects":[
+            {"effect":"attack", "value":4},
+            {"effect":"reaper", "ratio":1.0}
+        ],
+        "exhaust":true
     },
     {
         "id":"31",
-        "name":"Offering"
+        "name":"Offering",
+        "rarity":"super_rare",
+        "cost":0,
+        "card_type":"skill",
+        "target_selector":"self",
+        "effects":[
+            {"effect":"hp", "value":-6},
+            {"effect":"energy", "value":2},
+            {"effect":"draw", "value":3}
+        ],
+        "exhaust":true
     },
     {
         "id":"32",
-        "name":"Limit Break+"
+        "name":"Limit Break+",
+        "rarity":"super_rare",
+        "cost":1,
+        "card_type":"skill",
+        "target_selector":"self",
+        "effects":[
+            {"effect":"double_strength"}
+        ]
     },
     {
         "id":"33",
-        "name":"Rupture+"
+        "name":"Rupture",
+        "rarity":"rare",
+        "cost":1,
+        "card_type":"power",
+        "target_selector":"self",
+        "effects":[
+            {"effect":"power", "name":"Rupture", "value":1}
+        ]
     },
     {
         "id":"34",
-        "name":"Evolve+"
+        "name":"Evolve+",
+        "rarity":"rare",
+        "cost":1,
+        "card_type":"power",
+        "target_selector":"self",
+        "effects":[
+            {"effect":"power", "name":"Evolve", "value":2}
+        ]
     },
     {
         "id":"35",
-        "name": "Fire Breathing"
+        "name": "Fire Breathing",
+        "rarity":"rare",
+        "cost":1,
+        "card_type":"power",
+        "target_selector":"self",
+        "effects":[
+            {"effect":"power", "name":"FireBreath", "value":6}
+        ]
     },
     {
         "id":"36",
-        "name":"Feel No Pain"
+        "name":"Feel No Pain",
+        "rarity":"rare",
+        "cost":1,
+        "card_type":"power",
+        "target_selector":"self",
+        "effects":[
+            {"effect":"power","name": "GainBlockOnExhaust", "value": 3}
+        ]
     },
     {
         "id":"37",
-        "name":"Dark Embrace"
+        "name":"Dark Embrace+",
+        "rarity":"rare",
+        "cost":1,
+        "card_type":"power",
+        "target_selector":"self",
+        "effects":[
+            {"effect":"power", "name":"DrawOnExhaust", "value":1}
+        ]
+    },
+    {
+        "id":"38",
+        "name":"Brutality",
+        "rarity":"super_rare",
+        "cost":0,
+        "card_type":"power",
+        "target_selector":"self",
+        "effects":[
+            {"effect":"power", "name":"Brutality", "value":1}
+        ]
     }
 ]

@@ -32,6 +32,7 @@ class Card:
         
         for effect in self.effects:
             for target in targets:
+                target.prev_hp = target.hp
                 effect.apply(user, target, battle=battle)
 
 class CardEffect:
@@ -101,6 +102,25 @@ class HPEffect(CardEffect):
         user.hp=min(hp_changed, user.max_hp)
 
 
+class ReaperEffect(CardEffect):
+    def __init__(self, ratio=1):
+        self.ratio =ratio
+    
+    def apply(self, user, target, battle=None):
+        hp_reaped = max(0, target._prev_hp - max(target.hp,0))
+        hp_new= user.hp + hp_reaped * self.ratio
+        user.hp=min(hp_new, user.max_hp)
+
+
+class DoubleStrengthEffect(CardEffect):
+    def apply(self, user, targets, battle=None):
+        current = get_buff_value(user, "Strength")
+        if current > 0:
+            user.buffs["Strength"]["value"] += current
+        else:
+            return
+
+
 class DoubleBlockEffect(CardEffect):
     def apply(self, user, targets, battle=None):
         user.block *= 2
@@ -138,11 +158,15 @@ class ExhaustByTypeEffect(CardEffect):
 
 
 class PowerEffect(CardEffect):
-    def __init__(self, name):
+    def __init__(self, name, value=1):
         self.name = name
+        self.value = value
 
     def apply(self, user, targets, battle=None):
-        user.powers[self.name] = True
+        if self.name in user.powers:
+            user.powers[self.name] += self.value
+        else:
+            user.powers[self.name] = self.value
 
 
 class StatusEffect(CardEffect):

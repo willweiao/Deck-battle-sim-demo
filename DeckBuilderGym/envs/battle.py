@@ -74,6 +74,7 @@ class Battle:
                     self.hand.append(card)
                     drawn_cards.append(card.name)
                     drawn += 1
+                    self.player.after_draw_card(card, battle=self)
                 else:
                     break
 
@@ -103,6 +104,7 @@ class Battle:
 
         if getattr(card, 'exhaust', False):
             self.exhaust_pile.append(card)
+            user.trigger_on_exhaust(card, self)
         elif getattr(card, 'shuffle_back', False):
             index = random.randint(0, len(self.deck))
             self.deck.insert(index, card)
@@ -139,6 +141,7 @@ class Battle:
             if enemy.hp > 0:
                 enemy.begin_turn()
                 enemy.perform_action(self.player)
+                enemy.end_turn()
         
     def cleanup(self):
         cards_to_discard = []

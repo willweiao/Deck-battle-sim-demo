@@ -68,21 +68,23 @@ class BlockBasedAttack(CardEffect):
 
 
 class BuffEffect(CardEffect):
-    def __init__(self, name, value):
+    def __init__(self, name, value, duration=None):
         self.name = name
         self.value = value
-
-    def apply(self, user, target, battle=None):
-        target.apply_buff(self.name, self.value)
-
-
-class DebuffEffect(CardEffect):
-    def __init__(self, name, duration):
-        self.name = name
         self.duration = duration
 
     def apply(self, user, target, battle=None):
-        target.apply_debuff(self.name, self.duration)
+        target.apply_buff(self.name, self.value, self.duration)
+
+
+class DebuffEffect(CardEffect):
+    def __init__(self, name, duration, value=None):
+        self.name = name
+        self.duration = duration
+        self.value = value
+
+    def apply(self, user, target, battle=None):
+        target.apply_debuff(self.name, self.duration, self.value)
 
 
 class DoubleBlockEffect(CardEffect):
@@ -127,7 +129,7 @@ class ExhaustByTypeEffect(CardEffect):
         self.exclude_types = exclude_types or []  
         self.include_types = include_types 
     
-    def apply(self, user, targets, battle=None):
+    def apply(self, user, target, battle=None):
         count = 0
 
         if self.include_types:
@@ -144,8 +146,9 @@ class ExhaustByTypeEffect(CardEffect):
             user.block += count * self.block_per_card
 
         if self.damage_per_card > 0:
-            for t in targets:
-                t.take_damage(count*self.damage_per_card)
+                damage=EffectCalculator.modified_damage(count*self.damage_per_card, attacker=user, defender=target)
+                target.take_damage(damage)
+                
 
 
 class GenerateCardEffect(CardEffect):

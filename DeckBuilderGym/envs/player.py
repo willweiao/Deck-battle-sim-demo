@@ -1,6 +1,6 @@
 from card import EffectCalculator
 from player_strategy import SimpleStrategy
-from buff_n_debuff import apply_regen, apply_strength_gain, tick_poison, tick_standard_duration
+from buff_n_debuff import apply_regen, apply_strength_gain, tick_poison, tick_standard_duration, get_buff_value
 
 class Player:
     def __init__(self, name, hp, energy, 
@@ -18,7 +18,7 @@ class Player:
         self.buffs = buffs or {}
         self.debuffs = debuffs or {}
         self.powers = powers or {}
-        self.status_flags = {}
+        #self.status_flags = {}
         self.strategy = strategy or SimpleStrategy()
         self.block = 0
     
@@ -35,16 +35,18 @@ class Player:
             self.take_damage(value, source="self")
             battle.draw_cards(value)
 
-    def end_turn(self):
-        for name in list(self.buffs.keys()):
-            if self.buffs[name].get("temporary"):
-                del self.buffs[name]
-        for name in list(self.debuffs.keys()):
-            if self.debuffs[name].get("temporary"):
-                del self.debuffs[name]
-        for name in list(self.status_flags.keys()):
-            if self.status_flags[name].get("temporary"):
-                del self.status_flags[name]
+    def end_turn(self, battle=None):
+        if "LoseStrength" in self.debuffs:
+            amount = self.debuffs["LoseStrength"].get("value", 0)
+            if "Strength" in self.buffs:
+                self.buffs["Strength"]["value"] = self.buffs["Strength"]["value"] - amount
+                if battle is not None and battle.if_battle_log:
+                    battle.log.append(f"[EndTurn] {self.name} loses {amount} Strength.")
+            del self.debuffs["LoseStrength"]
+        if "NoDraw" in self.debuffs:
+            del self.debuffs["NoDraw"]
+        if battle is not None and battle.if_battle_log:
+            battle.log.append(f"[EndTurn] Player has {self.block} Block")
 
     def take_damage(self, amount, source="enemy"):
         damage = max(0, amount - self.block)
@@ -63,23 +65,27 @@ class Player:
         self.block += amount
     
     def apply_buff(self, name, value, duration=None):
-        if name in self.buffs:
-            self.buffs[name]["value"] += value
-            if duration is not None:
+        if name not in self.buffs:
+            self.buffs[name] = {"value": 0}
+
+        self.buffs[name]["value"] += value
+
+        if duration is not None:
+            if "duration" in self.buffs[name]:
                 self.buffs[name]["duration"] += duration
-        else:
-            self.buffs[name] = {"value": value}
-            if duration is not None:
+            else:
                 self.buffs[name]["duration"] = duration
 
     def apply_debuff(self, name, duration, value=None):
-        if name in self.debuffs:
-            self.debuffs[name]["duration"] += duration
-            if value is not None:
+        if name not in self.debuffs:
+            self.debuffs[name] = {"duration": 0}
+
+        self.debuffs[name]["duration"] += duration
+
+        if value is not None:
+            if "value" in self.debuffs[name]:
                 self.debuffs[name]["value"] += value
-        else:
-            self.debuffs[name] = {"duration": duration}
-            if value is not None:
+            else:
                 self.debuffs[name]["value"] = value
 
     def gain_energy(self, amount):
@@ -111,7 +117,6 @@ class Player:
 
             if not tick_standard_duration(entry):
                 del self.buffs[name]
-
         # Debuffs
         for name in list(self.debuffs.keys()):
             entry = self.debuffs[name]
@@ -139,6 +144,11 @@ class Player:
                             enemy.take_damage(amount)
 
     def play_cards(self, hand, enemies, battle):
+        playable_cards = [card for card in hand if getattr(card, "playable", True)]
+        if not playable_cards:
+            if battle.if_battle_log:
+                battle.log.append("[Skip] No playable cards this turn.")
+            return
         while True:
             card = self.strategy.select_card(hand, self, enemies, battle)
             if card is None:

@@ -15,6 +15,6 @@ if __name__ == "__main__":
     enemygroup_json_path = os.path.join(base_dir, "data", "enemy_group.json")
     deck, _= load_deck_by_id(deck_json_path, "deck05", card_pool)   # debug deck
     player=Player(name="Hero", hp=50, energy=3)
-    enemies, _ = load_enemy_group(enemygroup_json_path, "group00")
+    enemies, _ = load_enemy_group(enemygroup_json_path, "group000")
     battle = Battle(player, enemies, deck, card_pool=card_pool, if_battle_log=True)
     battle.run()

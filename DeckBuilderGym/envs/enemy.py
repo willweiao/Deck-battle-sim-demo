@@ -6,7 +6,8 @@ class Enemy:
                  buffs=None, 
                  debuffs=None, 
                  intent_sq=None, 
-                 tags=None):
+                 tags=None,
+                 die_after_turn=None):
         self.id = id
         self.name = name or id
         self.hp = hp
@@ -16,6 +17,7 @@ class Enemy:
         self.intent_sq = intent_sq
         self.intent_index = 0
         self.tags = tags
+        self.die_after_turn=die_after_turn
         self.block = 0
         self.enemy_group = []
     
@@ -26,13 +28,14 @@ class Enemy:
         self.block = 0
         self.tick_buffs_and_debuffs()
     
-    def end_turn(self):
-        for name in list(self.buffs.keys()):
-            if self.buffs[name].get("temporary"):
-                del self.buffs[name]
-        for name in list(self.debuffs.keys()):
-            if self.debuffs[name].get("temporary"):
-                del self.debuffs[name]
+    def end_turn(self,battle=None):
+        if "LoseStrength" in self.debuffs:
+            amount = self.debuffs["LoseStrength"].get("value", 0)
+            if "Strength" in self.buffs:
+                self.buffs["Strength"]["value"] = self.buffs["Strength"]["value"] - amount
+                if battle is not None and battle.if_battle_log:
+                    battle.log.append(f"[EndTurn] {self.name} loses {amount} Strength.")
+            del self.debuffs["LoseStrength"]
                 
     def tick_buffs_and_debuffs(self):
         # Buffs
@@ -67,25 +70,29 @@ class Enemy:
         self.block += amount
     
     def apply_buff(self, name, value, duration=None):
-        if name in self.buffs:
-            self.buffs[name]["value"] += value
-            if duration is not None:
+        if name not in self.buffs:
+            self.buffs[name] = {"value": 0}
+
+        self.buffs[name]["value"] += value
+
+        if duration is not None:
+            if "duration" in self.buffs[name]:
                 self.buffs[name]["duration"] += duration
-        else:
-            self.buffs[name] = {"value": value}
-            if duration is not None:
+            else:
                 self.buffs[name]["duration"] = duration
 
     def apply_debuff(self, name, duration, value=None):
-        if name in self.debuffs:
-            self.debuffs[name]["duration"] += duration
-            if value is not None:
+        if name not in self.debuffs:
+            self.debuffs[name] = {"duration": 0}
+
+        self.debuffs[name]["duration"] += duration
+
+        if value is not None:
+            if "value" in self.debuffs[name]:
                 self.debuffs[name]["value"] += value
-        else:
-            self.debuffs[name] = {"duration": duration}
-            if value is not None:
+            else:
                 self.debuffs[name]["value"] = value
-    
+
     def heal(self, amount):
         self.hp = min(self.max_hp, self.hp + amount)
 

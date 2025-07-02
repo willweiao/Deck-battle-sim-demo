@@ -16,7 +16,7 @@ def apply_regen(entity, entry):
 
 def apply_strength_gain(entity, entry):
     gain = entry.get("value", 0)
-    entity.strength += gain
+    entity.apply_buff("Strength", gain)
 
 # debuff类
 def tick_poison(entity, entry):

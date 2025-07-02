@@ -5,7 +5,6 @@ class SimpleStrategy:
         for card in hand:
             if not getattr(card, "playable", True):
                 continue
-
             if card.cost == "x":
                 return card
             elif isinstance(card.cost, (int, float)) and card.cost <= player.energy:

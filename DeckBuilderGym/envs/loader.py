@@ -24,14 +24,14 @@ def parse_effect(effect_dict):
         return BuffEffect(
             name=effect_dict["name"],
             value=effect_dict["value"],
-            temporary=effect_dict.get("temporary", False)
+            duration=effect_dict.get("duration",None)
             #target_self=effect_dict.get("target_self", True)
         )
     elif effect_type == "debuff":
         return DebuffEffect(
             name=effect_dict["name"],
             duration=effect_dict["duration"],
-            temporary=effect_dict.get("temporary", False)
+            value=effect_dict.get("value",None)
             #target_user=effect_dict.get("target_user", False)
         )
     elif effect_type == "draw":

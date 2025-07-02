@@ -49,11 +49,14 @@ class Battle:
         self.log.append(f"[Turn {self.turn} End] Player HP: {self.player.hp}, Buffs: {self.player.buffs}, Debuffs: {self.player.debuffs}")
         for e_state in enemy_states:
             self.log.append(f"Enemy: {e_state}")
+    
+    def battle_start(self):
+        random.shuffle(self.deck)
 
     def draw_cards(self, num, hand_limit=10):
         drawn = 0
         drawn_cards = []
-        if self.player.status_flags.get("NoDraw", {}).get("value"):
+        if "NoDraw" in self.player.debuffs:
             if self.if_battle_log:
                 self.log.append("Prevented from drawing cards this turn.")
             return
@@ -80,6 +83,8 @@ class Battle:
 
         if self.if_battle_log:
             self.log.append(f"[Turn {self.turn}] Drew cards: {', '.join(drawn_cards)}")
+            card_names = [card.name for card in self.hand]
+            self.log.append(f"[Turn {self.turn}] Hand cards: {', '.join(card_names)}")
         return drawn
     
     def play_card(self, card, user, targets=None):
@@ -108,7 +113,7 @@ class Battle:
 
         if getattr(card, 'exhaust', False):
             self.exhaust_pile.append(card)
-            user.trigger_on_exhaust(card, self)
+            user.trigger_on_exhaust(self)
         elif getattr(card, 'shuffle_back', False):
             index = random.randint(0, len(self.deck))
             self.deck.insert(index, card)
@@ -133,7 +138,7 @@ class Battle:
                 "actions":[]
                 }
         self.player.play_cards(self.hand, self.enemies, self)
-        self.player.end_turn()
+        self.player.end_turn(self)
         if not self.if_battle_log:
             self.running_log["hp_left"]=self.player.hp
             self.simulation_log["turns"].append(self.running_log)
@@ -143,9 +148,14 @@ class Battle:
             self.log.append(f"[Turn {self.turn}] Enemies' turn begins.")
         for enemy in self.enemies:
             if enemy.hp > 0:
+                if enemy.die_after_turn is not None and self.turn >= enemy.die_after_turn:
+                    enemy.hp = 0
+                    if self.if_battle_log:
+                        self.log.append(f"[AutoDeath] {enemy.name} dies automatically after turn {self.turn}.")
+                    continue
                 enemy.begin_turn()
                 enemy.perform_action(self.player)
-                enemy.end_turn()
+                enemy.end_turn(self)
         
     def cleanup(self):
         cards_to_discard = []
@@ -198,6 +208,7 @@ class Battle:
                 f.write(entry + "\n")
 
     def run(self):
+        self.battle_start()
         while True:
             self.turn += 1
             if self.if_battle_log:

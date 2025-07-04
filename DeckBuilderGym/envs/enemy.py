@@ -2,7 +2,8 @@ from card import EffectCalculator
 from buff_n_debuff import apply_regen, tick_poison, tick_standard_duration
 
 class Enemy:
-    def __init__(self, id, name, hp, max_hp, 
+    def __init__(self, id, name, hp, max_hp,
+                 block=0,
                  buffs=None, 
                  debuffs=None, 
                  intent_sq=None, 
@@ -11,14 +12,15 @@ class Enemy:
         self.id = id
         self.name = name or id
         self.hp = hp
-        self.max_hp = max_hp
+        self.max_hp = max_hp or hp
+        self.block = block or 0
+        self.prev_hp = hp
         self.buffs = buffs or {}
         self.debuffs = debuffs or {}
         self.intent_sq = intent_sq
         self.intent_index = 0
         self.tags = tags
         self.die_after_turn=die_after_turn
-        self.block = 0
         self.enemy_group = []
     
     def set_group(self, group):

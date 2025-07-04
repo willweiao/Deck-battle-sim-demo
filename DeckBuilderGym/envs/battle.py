@@ -24,9 +24,11 @@ class Battle:
         self.draw_per_turn = draw_per_turn
         self.hand_limit = hand_limit
         self.card_pool = card_pool or {}
+        self.card_id_map = {c["id"]: c for c in card_pool}
         self.victory_condition = victory_condition or VictoryCondition()
         self.if_battle_log= if_battle_log
         self.hand = []
+        self.picked_card = []
         self.discard_pile = []
         self.exhaust_pile = []
         self.used_powers = []
@@ -46,7 +48,7 @@ class Battle:
 
     def log_state(self):
         enemy_states = [f"{enemy.name}(HP: {enemy.hp}, Buffs: {enemy.buffs}, Debuffs: {enemy.debuffs})" for enemy in self.enemies]
-        self.log.append(f"[Turn {self.turn} End] Player HP: {self.player.hp}, Buffs: {self.player.buffs}, Debuffs: {self.player.debuffs}")
+        self.log.append(f"[Turn {self.turn} End] Player HP: {self.player.hp}, Buffs: {self.player.buffs}, Debuffs: {self.player.debuffs}, Powers: {self.player.powers}")
         for e_state in enemy_states:
             self.log.append(f"Enemy: {e_state}")
     
@@ -104,6 +106,9 @@ class Battle:
                 "targets":target_ids
             })
         #print(f"DEBUG: battle play card target {[t.name for t in targets]}")
+        self.picked_card.append(card)
+        if card in self.hand:
+            self.hand.remove(card)
         card.apply(user, targets, battle=self)
         if card.cost =="x":
             actual_cost=user.energy
@@ -122,11 +127,11 @@ class Battle:
         else:
             self.discard_pile.append(card)
 
-        if card in self.hand:
-            self.hand.remove(card)
+        #if card in self.hand:
+        #    self.hand.remove(card)
 
     def player_turn(self):
-        self.player.begin_turn()
+        self.player.begin_turn(self)
         if self.if_battle_log:
             self.log.append(f"\n[Turn {self.turn}] Player's turn begins.")
             self.draw_cards(self.draw_per_turn)
@@ -139,6 +144,9 @@ class Battle:
                 }
         self.player.play_cards(self.hand, self.enemies, self)
         self.player.end_turn(self)
+        if self.if_battle_log:
+            card_names = [card.name for card in self.hand]
+            self.log.append(f"[EndTurn] Hand cards: {', '.join(card_names)}")
         if not self.if_battle_log:
             self.running_log["hp_left"]=self.player.hp
             self.simulation_log["turns"].append(self.running_log)
@@ -167,6 +175,7 @@ class Battle:
                 cards_to_discard.append(card)
             elif getattr(card, 'ethereal', False):
                 cards_to_exhaust.append(card)
+                self.player.trigger_on_exhaust(self)
             elif not getattr(card, 'retain', False):
                 cards_to_discard.append(card)
 

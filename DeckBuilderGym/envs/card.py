@@ -4,7 +4,8 @@ from buff_n_debuff import get_buff_value, get_debuff_value, has_buff, has_debuff
 
 
 class Card:
-    def __init__(self, id, name, rarity, cost, effects, card_type, 
+    def __init__(self, id, name, cost, effects, card_type,
+                 rarity=None,
                  playable=True,
                  target_selector=None, 
                  ethereal=False, 
@@ -14,10 +15,10 @@ class Card:
                  shuffle_back=False):
         self.id = id
         self.name = name
-        self.rarity = rarity
         self.cost = cost
         self.effects = effects
         self.card_type = card_type
+        self.rarity = rarity
         self.playable = playable
         self.target_selector = target_selector
         self.ethereal = ethereal
@@ -32,7 +33,6 @@ class Card:
         
         for effect in self.effects:
             for target in targets:
-                target.prev_hp = target.hp
                 effect.apply(user, target, battle=battle)
 
 
@@ -121,11 +121,11 @@ class EnergyEffect(CardEffect):
 
 class ExhaustByTypeEffect(CardEffect):
     def __init__(self, block_per_card=0, 
-                 damage_per_card=0,
+                 attack_per_card=0,
                  exclude_types=None,
                  include_types=None):
         self.block_per_card = block_per_card
-        self.damage_per_card = damage_per_card
+        self.attack_per_card = attack_per_card
         self.exclude_types = exclude_types or []  
         self.include_types = include_types 
     
@@ -140,13 +140,14 @@ class ExhaustByTypeEffect(CardEffect):
         for card in to_exhaust:
             battle.hand.remove(card)
             battle.exhaust_pile.append(card)
+            user.trigger_on_exhaust(battle)
             count += 1
 
         if self.block_per_card > 0:
-            user.block += count * self.block_per_card
+            user.block += count * self.block_per_card 
 
-        if self.damage_per_card > 0:
-                damage=EffectCalculator.modified_damage(count*self.damage_per_card, attacker=user, defender=target)
+        if self.attack_per_card > 0:
+                damage=EffectCalculator.modified_damage(count*self.attack_per_card, attacker=user, defender=target)
                 target.take_damage(damage)
                 
 
@@ -158,9 +159,9 @@ class GenerateCardEffect(CardEffect):
         self.destination = destination  # "hand", "draw", "discard"
 
     def apply(self, user, target, battle=None):
-        card_template = battle.card_pool[self.card_id]  
+        card_template = battle.card_id_map[self.card_id]  
         for _ in range(self.amount):
-            card = deepcopy(card_template)
+            card = Card(**card_template)
             if self.destination == "hand":
                 if len(battle.hand) < battle.hand_limit:
                     battle.hand.append(card)
@@ -197,14 +198,20 @@ class PowerEffect(CardEffect):
             user.powers[self.name] = self.value
 
 
-class ReaperEffect(CardEffect):
-    def __init__(self, ratio=1):
+class ReaperAttackEffect(CardEffect):
+    def __init__(self, ratio=1, attack=1):
         self.ratio =ratio
+        self.attack = attack
     
     def apply(self, user, target, battle=None):
-        hp_reaped = max(0, target._prev_hp - max(target.hp,0))
+        target.prev_hp = target.hp
+        damage=EffectCalculator.modified_damage(self.attack, attacker=user, defender=target)
+        target.take_damage(damage)
+        hp_reaped = max(0, target.prev_hp - max(target.hp,0))
         hp_new= user.hp + hp_reaped * self.ratio
         user.hp=min(hp_new, user.max_hp)
+        if battle.if_battle_log:
+            battle.log.append(f"[Effect] Reaped {hp_reaped}")
 
 
 class StatusEffect(CardEffect):

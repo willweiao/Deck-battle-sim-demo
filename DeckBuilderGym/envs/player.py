@@ -27,7 +27,7 @@ class Player:
             self.block = 0
         self.energy = self.max_energy
         self.tick_buffs_and_debuffs()
-        self.trigger_begin_turn_powers(battle=battle)
+        self.trigger_begin_turn_powers(battle)
 
     def trigger_begin_turn_powers(self, battle):
         if "Brutality" in self.powers:
@@ -98,10 +98,10 @@ class Player:
         return name in self.powers
     
     def trigger_on_exhaust(self, battle=None):
-        if "GainBlockOnExhaust" in self.powers:
+        if self.has_power("GainBlockOnExhaust"):
             block_per_exhaust = self.powers["GainBlockOnExhaust"]
             self.block += block_per_exhaust
-        if "DrawOnExhaust" in self.powers:
+        if self.has_power("DrawOnExhaust"):
             draw_per_exhaust = self.powers["DrawOnExhaust"]
             battle.draw_cards(draw_per_exhaust)
 
@@ -161,7 +161,6 @@ class Player:
             targets = self.strategy.select_target(card, self, enemies, battle)
             if not targets:
                 break
-            
             #print(f"DEBUG: play_cards target: {[t.name for t in targets]}")
             battle.play_card(card, self, targets)
 

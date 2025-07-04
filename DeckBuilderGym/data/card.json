@@ -265,7 +265,8 @@
         "target_selector":"single_enemy",
         "effects":[
             {"effect":"exhaust_by_type", "attack_per_card":7, "exclude_types":[]}
-        ]
+        ],
+        "exhaust":true
     },
     {
         "id":"24",
@@ -296,9 +297,7 @@
         "card_type": "status",
         "target_selector": "self",
         "playable": false,
-        "effects": [
-            { "effect": "hp", "value": -2 }
-        ]
+        "effects": []
     },
     {
         "id":"97",
@@ -386,8 +385,7 @@
         "card_type":"attack",
         "target_selector":"all_enemies",
         "effects":[
-            {"effect":"attack", "value":4},
-            {"effect":"reaper", "ratio":1.0}
+            {"effect":"reaper", "ratio":1.0, "attack":4}
         ],
         "exhaust":true
     },

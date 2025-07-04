@@ -1,7 +1,7 @@
 import os
 import json
 import random
-from card import Card, AttackEffect,XAttackEffect,BlockEffect,BlockBasedAttack, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, ReaperEffect, DoubleBlockEffect, DoubleStrengthEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
+from card import Card, AttackEffect,XAttackEffect,BlockEffect,BlockBasedAttack, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, ReaperAttackEffect, DoubleBlockEffect, DoubleStrengthEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
 from enemy import Enemy 
 
 
@@ -47,8 +47,9 @@ def parse_effect(effect_dict):
             amount=effect_dict["value"]
         )
     elif effect_type == "reaper":
-        return ReaperEffect(
-            ratio=effect_dict.get("ratio", 1)
+        return ReaperAttackEffect(
+            ratio=effect_dict.get("ratio", 1),
+            attack=effect_dict.get("attack", 1)
         )
     elif effect_type == "power":
         return PowerEffect(
@@ -62,7 +63,7 @@ def parse_effect(effect_dict):
     elif effect_type == "exhaust_by_type":
         return ExhaustByTypeEffect(
             block_per_card=effect_dict.get("block_per_card", 0),
-            damage_per_card=effect_dict.get("damage_per_card", 0),
+            attack_per_card=effect_dict.get("attack_per_card", 0),
             exclude_types=effect_dict.get("exclude_types", []),
             include_types=effect_dict.get("include_types")
         )
@@ -97,7 +98,7 @@ def load_card_by_id(card_pool, card_id):
             return Card(
                 id=card_def["id"],
                 name=card_def["name"],
-                rarity=card_def["rarity"],
+                rarity=card_def.get("rarity",None),
                 cost=card_def["cost"],
                 target_selector=card_def["target_selector"],
                 effects=effects,
@@ -136,10 +137,12 @@ def load_enemy_by_id(enemy_id: str, json_path="data/enemy.json") -> Enemy:
                 name=entry["name"],
                 hp=entry["hp"],
                 max_hp=entry["hp"],
+                block=entry.get("block",0),
                 buffs=entry.get("buffs", {}),
                 debuffs=entry.get("debuffs", {}),
                 intent_sq=entry.get("intent_sq", []),
-                tags = entry.get("tags")
+                tags = entry.get("tags", None),
+                die_after_turn=entry.get("die_after_turn", False)
             )
     
     raise ValueError(f"[Loader Error] Enemy with id '{enemy_id}' not found.")

@@ -2,7 +2,7 @@ import os
 import json
 import random
 from card import Card, AttackEffect,XAttackEffect,BlockEffect,BlockBasedAttack, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, ReaperAttackEffect, DoubleBlockEffect, DoubleStrengthEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
-from enemy import Enemy 
+from enemy import Enemy, AttackIntent,BlockIntent,BuffIntent,DebuffIntent,HealIntent,InsertCardIntent,SpawnIntent
 
 
 def parse_effect(effect_dict):
@@ -84,6 +84,47 @@ def parse_effect(effect_dict):
         raise ValueError(f"Unknown effect type: {effect_type}")
 
 
+def parse_intent(intent_dict):
+    intent_type = intent_dict["type"]
+
+    if intent_type == "attack":
+        return AttackIntent(amount=intent_dict["value"])
+    elif intent_type == "block":
+        return BlockIntent(
+            amount=intent_dict["value"],
+            target_selector=intent_dict.get("target_selector", "self")
+            )
+    elif intent_type == "buff":
+        return BuffIntent(
+            name=intent_dict["name"],
+            target_selector=intent_dict.get("target_selector", "self"),
+            value=intent_dict["value"],
+            duration=intent_dict.get("duration", None)
+        )
+    elif intent_type == "debuff":
+        return DebuffIntent(
+            name=intent_dict["name"],
+            duration=intent_dict["duration"],
+            value=intent_dict.get("value",None)
+        )
+    elif intent_type == "heal":
+        return HealIntent(
+            amount=intent_dict["value"],
+            target_selector=intent_dict.get("target_selector", "self")
+        )
+    elif intent_type == "insert_card":
+        return InsertCardIntent(
+            card_id=intent_dict["card_id"],
+            amount=intent_dict.get("amount", 1)
+        )
+    elif intent_type == "spawn":
+        return SpawnIntent(
+            threshold=intent_dict["threshold"],
+            summon_enemy_id=intent_dict["summon_enemy_id"],
+            amount=intent_dict.get("amount",2)
+        )
+
+
 def load_card_pool(filename="card.json"):
     base_dir = os.path.dirname(os.path.dirname(__file__))  # → DeckBuilderGym/
     file_path = os.path.join(base_dir, "data", filename)
@@ -132,6 +173,12 @@ def load_enemy_by_id(enemy_id: str, json_path="data/enemy.json") -> Enemy:
     
     for entry in data:
         if entry["id"] == enemy_id:
+            intent_sq_raw = entry.get("intent_sq", [])
+            intent_sq_parsed = []
+            for turn_intents in intent_sq_raw:
+                parsed_turn = [parse_intent(intent) for intent in turn_intents]
+                intent_sq_parsed.append(parsed_turn)
+
             return Enemy(
                 id=entry["id"],
                 name=entry["name"],
@@ -140,7 +187,7 @@ def load_enemy_by_id(enemy_id: str, json_path="data/enemy.json") -> Enemy:
                 block=entry.get("block",0),
                 buffs=entry.get("buffs", {}),
                 debuffs=entry.get("debuffs", {}),
-                intent_sq=entry.get("intent_sq", []),
+                intent_sq=intent_sq_parsed,
                 tags = entry.get("tags", None),
                 die_after_turn=entry.get("die_after_turn", False)
             )
@@ -161,3 +208,14 @@ def load_enemy_group(group_path, group_id):
     enemy_ids = group_data[group_id]["enemy_ids"]
     enemy_objs = [load_enemy_by_id(eid) for eid in enemy_ids]
     return enemy_objs, group_data[group_id]["name"]
+
+
+def resolve_target_selector(user, selector, battle):
+    if selector == "self":
+        return [user]
+    elif selector == "all_enemies":
+        return [e for e in battle.enemies if e.hp > 0]
+    elif selector == "boss":
+        return [e for e in battle.enemies if "Boss" in getattr(e, "tags", [])]
+    else:
+        return [e for e in battle.enemies if e.name == selector or e.id == selector]

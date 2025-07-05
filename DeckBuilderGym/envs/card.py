@@ -32,7 +32,7 @@ class Card:
             raise ValueError(f"[CardError] Card '{self.name}' expected at least one target but got: {targets}.")
         
         for effect in self.effects:
-            if isinstance(effect, GenerateCardEffect):
+            if isinstance(effect, GenerateCardEffect) or isinstance(effect, DrawEffect):
                 effect.apply(user, target, battle=battle)
             else:
                 for target in targets:

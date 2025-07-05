@@ -31,9 +31,7 @@ def generate_action_stats(examine_path, only_wins=True):
             continue
         for turn in sim["turns"]:
             turn_num = turn["turn"]
-            hand_ids = sorted(turn["hand"])
-            hand_key = ",".join(map(str, hand_ids))
-            stat_key = f"turn={turn_num}|hand={hand_key}"
+            stat_key = f"turn={turn_num}"
 
             for action in turn["actions"]:
                 card_id = action["card"]

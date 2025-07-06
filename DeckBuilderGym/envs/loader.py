@@ -115,7 +115,8 @@ def parse_intent(intent_dict):
     elif intent_type == "insert_card":
         return InsertCardIntent(
             card_id=intent_dict["card_id"],
-            amount=intent_dict.get("amount", 1)
+            amount=intent_dict.get("amount", 1),
+            destination=intent_dict.get("destination", "discard")
         )
     elif intent_type == "spawn":
         return SpawnIntent(
@@ -126,7 +127,7 @@ def parse_intent(intent_dict):
 
 
 def load_card_pool(filename="card.json"):
-    base_dir = os.path.dirname(os.path.dirname(__file__))  # → DeckBuilderGym/
+    base_dir = os.path.dirname(os.path.dirname(__file__))  # DeckBuilderGym/
     file_path = os.path.join(base_dir, "data", filename)
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -189,7 +190,7 @@ def load_enemy_by_id(enemy_id: str, json_path="data/enemy.json") -> Enemy:
                 debuffs=entry.get("debuffs", {}),
                 intent_sq=intent_sq_parsed,
                 tags = entry.get("tags", None),
-                die_after_turn=entry.get("die_after_turn", False)
+                die_after_turn=entry.get("die_after_turn", None)
             )
     
     raise ValueError(f"[Loader Error] Enemy with id '{enemy_id}' not found.")
@@ -209,13 +210,3 @@ def load_enemy_group(group_path, group_id):
     enemy_objs = [load_enemy_by_id(eid) for eid in enemy_ids]
     return enemy_objs, group_data[group_id]["name"]
 
-
-def resolve_target_selector(user, selector, battle):
-    if selector == "self":
-        return [user]
-    elif selector == "all_enemies":
-        return [e for e in battle.enemies if e.hp > 0]
-    elif selector == "boss":
-        return [e for e in battle.enemies if "Boss" in getattr(e, "tags", [])]
-    else:
-        return [e for e in battle.enemies if e.name == selector or e.id == selector]

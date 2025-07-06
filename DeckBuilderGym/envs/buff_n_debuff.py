@@ -1,14 +1,4 @@
-def get_buff_value(entity, name):
-    return entity.buffs.get(name, {}).get("value", 0)
-
-def get_debuff_value(entity, name):
-    return entity.debuffs.get(name, {}).get("value", 0)
-
-def has_buff(entity, name):
-    return name in entity.buffs
-
-def has_debuff(entity, name):
-    return name in entity.debuffs
+#from enemy import SpawnIntent
 
 # buff类
 def apply_regen(entity, entry):
@@ -17,6 +7,7 @@ def apply_regen(entity, entry):
 def apply_strength_gain(entity, entry):
     gain = entry.get("value", 0)
     entity.apply_buff("Strength", gain)
+
 
 # debuff类
 def tick_poison(entity, entry):

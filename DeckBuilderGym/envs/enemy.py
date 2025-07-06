@@ -1,6 +1,8 @@
-from card import Card,EffectCalculator
-from loader import load_enemy_by_id, resolve_target_selector
+import random
+from effectcalculator import EffectCalculator
+from utils import resolve_target_selector
 from buff_n_debuff import apply_regen, tick_poison, tick_standard_duration
+
 
 class Enemy:
     def __init__(self, id, name, hp, max_hp,
@@ -27,9 +29,9 @@ class Enemy:
     def set_group(self, group):
         self.enemy_group = group
     
-    def begin_turn(self):
+    def begin_turn(self, battle):
         self.block = 0
-        self.tick_buffs_and_debuffs()
+        self.tick_buffs_and_debuffs(battle)
     
     def end_turn(self,battle=None):
         if "LoseStrength" in self.debuffs:
@@ -40,14 +42,13 @@ class Enemy:
                     battle.log.append(f"[EndTurn] {self.name} loses {amount} Strength.")
             del self.debuffs["LoseStrength"]
                 
-    def tick_buffs_and_debuffs(self):
+    def tick_buffs_and_debuffs(self, battle=None):
         # Buffs
         for name in list(self.buffs.keys()):
             entry = self.buffs[name]
 
             if name == "Regen":
-                self.heal(entry["value"])
-
+                apply_regen(self,entry)
             if not tick_standard_duration(entry):
                 del self.buffs[name]
 
@@ -56,11 +57,7 @@ class Enemy:
             entry = self.debuffs[name]
 
             if name == "Poison":
-                damage = entry["value"]
-                self.hp -= damage
-                entry["value"] -= 1
-                if entry["value"] <= 0:
-                    del self.debuffs[name]
+                tick_poison(self, entry)
             elif not tick_standard_duration(entry):
                 del self.debuffs[name]
 
@@ -98,40 +95,25 @@ class Enemy:
 
     def heal(self, amount):
         self.hp = min(self.max_hp, self.hp + amount)
+    
+    def buff_before_action(self, battle):
+        if "Split" in self.buffs:
+            threshold = 0.5 * self.max_hp
+            if self.hp <= threshold:
+                split_intent = SpawnIntent(summon_enemy_id="2", amount=2)
+                split_intent.execute(self, battle)
+            return
 
-    def perform_action(self, player):
+    def perform_action(self, battle=None):
         if not self.intent_sq:
             return
-        
+        self.buff_before_action(battle)
+
         intents = self.intent_sq[self.intent_index % len(self.intent_sq)]
         self.intent_index += 1
-        boss = next((e for e in self.enemy_group if "Boss" in e.tags), None)
         
-        for intent in intents: 
-            intent_type = intent.get("type")
-            intent_name = intent.get("name", "")
-            intent_value = intent.get("value", 0)
-            intent_duration = intent.get("duration", 1)
-        
-            if intent_type=="attack":
-                damage = EffectCalculator.modified_damage(intent_value, attacker=self, defender=player)
-                player.take_damage(damage)
-            elif intent_type=="block":
-                block = EffectCalculator.modified_block(intent_value, user=self)
-                self.gain_block(block)
-            elif intent_type=="buff":
-                self.apply_buff(intent_name, intent_value)
-            elif intent_type=="debuff":
-                player.apply_debuff(intent_name, intent_duration)
-            elif intent_type=="heal":
-                self.heal(intent_value)
-            elif intent_type=="block_boss" and boss:
-                block = EffectCalculator.modified_block(intent_value, user=boss)
-                boss.gain_block(block)
-            elif intent_type=="buff_boss" and boss:
-                boss.apply_buff(intent_name, intent_value)
-            elif intent_type=="heal_boss" and boss:
-                boss.heal(intent_value)
+        for intent in intents:
+            intent.execute(self, battle)
 
 
 class EnemyIntent:
@@ -177,7 +159,7 @@ class DebuffIntent(EnemyIntent):
         self.value = value
     
     def execute(self, user, battle):
-        battle.player.apply_buff(self.name, self.value, self.duration)
+        battle.player.apply_debuff(self.name, self.duration, self.value)
 
 class HealIntent(EnemyIntent):
     def __init__(self, amount, target_selector):
@@ -190,30 +172,42 @@ class HealIntent(EnemyIntent):
             target.heal(self.amount)
 
 class InsertCardIntent(EnemyIntent):
-    def __init__(self, card_id, amount=1):
+    def __init__(self, card_id, amount=1, destination="discard"):
         self.card_id = card_id
         self.amount = amount
+        self.destination = destination
 
     def execute(self, user, battle):
+        from card import Card
+
         for _ in range(self.amount):
             card_template = battle.card_id_map[self.card_id]
             card = Card(**card_template)
-            battle.player.discard_pile.append(card)
+            if self.destination == "discard":
+                battle.discard_pile.append(card)
+            elif self.destination == "draw":
+                index = random.randint(0, len(battle.deck))
+                battle.deck.insert(index, card)
+            elif self.destination == "hand":
+                if len(battle.hand) < battle.hand_limit:
+                    battle.hand.append(card)
+                else:
+                    battle.discard_pile.append(card)
         if battle.if_battle_log:
             battle.log.append(f"[Intent] {user.name} inserts {self.amount}x '{card.name}' into player's discard pile.")
 
 class SpawnIntent(EnemyIntent):
-    def __init__(self, threshold, summon_enemy_id, amount=2):
-        self.threshold = threshold
+    def __init__(self, summon_enemy_id, amount=2):
         self.summon_enemy_id = summon_enemy_id
         self.amount = amount
 
     def execute(self, user, battle):
-        if user.hp <= self.threshold:
-            for _ in range(self.amount):
-                mid_slime = load_enemy_by_id(self.summon_enemy_id)
-                mid_slime.hp = user.hp
-                battle.enemies.append(mid_slime)
-            user.hp = 0
-            if battle.if_battle_log:
-                battle.log.append(f"[Intent] {user.name} splits into {self.amount} {self.summon_enemy_id}s!")
+        from loader import load_enemy_by_id 
+
+        for _ in range(self.amount):
+            mid_slime = load_enemy_by_id(self.summon_enemy_id)
+            mid_slime.hp = user.hp
+            battle.enemies.append(mid_slime)
+        user.hp = 0
+        if battle.if_battle_log:
+            battle.log.append(f"[Intent] {user.name} splits into {self.amount} {self.summon_enemy_id}s!")

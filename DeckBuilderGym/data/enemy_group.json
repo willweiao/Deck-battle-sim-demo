@@ -12,7 +12,7 @@
     "enemy_ids": ["1", "2"]
   },
   "group02": {
-    "name": "Slime_Trio",
-    "enemy_ids": ["1", "2", "3"]
+    "name": "Slime_large",
+    "enemy_ids": ["3"]
   }
 }

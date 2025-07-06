@@ -1,6 +1,5 @@
-from card import EffectCalculator
 from player_strategy import SimpleStrategy
-from buff_n_debuff import apply_regen, apply_strength_gain, tick_poison, tick_standard_duration, get_buff_value
+from buff_n_debuff import apply_regen, apply_strength_gain, tick_poison, tick_standard_duration
 
 class Player:
     def __init__(self, name, hp, energy, 

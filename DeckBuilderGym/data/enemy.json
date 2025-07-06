@@ -22,19 +22,28 @@
         "name":"Middle Slime A",
         "hp": 34,
         "intent_sq":[
-            {"type": "debuff", "name": "Vulnerable", "duration": 2},
-            {"type": "attack", "value": 10},
-            {"type": "attack", "value": 14}
+            [
+                {"type":"attack", "value":8},
+                {"type":"insert_card", "card_id":"96", "amount":1, "destination":"discard"}
+            ],
+            [{"type":"debuff", "name":"Weak", "duration":2}],
+            [{"type": "attack", "value": 12}]
         ]
     },
     {
         "id": "3",
-        "name": "Large Slime",
-        "hp": 60,
+        "name": "Large Slime A",
+        "hp": 72,
+        "buffs": {
+            "Split": {"value": 1}
+        },
         "intent_sq":[
-            {"type": "attack", "value": 12},
-            {"type": "attack", "value": 18},
-            {"type": "debuff", "name": "Vulnerable", "duration": 2}
+           [
+            {"type":"insert_card", "card_id":"96", "amount":2, "destination":"discard"},
+            {"type":"attack", "value":12}
+           ],
+           [{"type":"attack", "value":18}],
+           [{"type":"debuff", "name":"Weak", "duration":2}]
         ]
     }
 ]

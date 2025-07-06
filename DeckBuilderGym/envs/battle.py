@@ -1,6 +1,5 @@
 import os
 import random
-from typing import List     
 
 
 class VictoryCondition:
@@ -161,8 +160,8 @@ class Battle:
                     if self.if_battle_log:
                         self.log.append(f"[AutoDeath] {enemy.name} dies automatically after turn {self.turn}.")
                     continue
-                enemy.begin_turn()
-                enemy.perform_action(self.player)
+                enemy.begin_turn(self)
+                enemy.perform_action(self)
                 enemy.end_turn(self)
         
     def cleanup(self):

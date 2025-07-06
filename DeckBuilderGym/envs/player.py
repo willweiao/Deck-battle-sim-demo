@@ -76,6 +76,10 @@ class Player:
                 self.buffs[name]["duration"] = duration
 
     def apply_debuff(self, name, duration, value=None):
+        if "Artifact" in self.buffs and self.buffs["Artifact"]["value"] > 0:
+            self.buffs["Artifact"]["value"] -= 1
+            return
+        
         if name not in self.debuffs:
             self.debuffs[name] = {"duration": 0}
 
@@ -143,13 +147,18 @@ class Player:
                             enemy.take_damage(amount)
 
     def play_cards(self, hand, enemies, battle):
-        playable_cards = [card for card in hand if getattr(card, "playable", True)]
-        if not playable_cards:
-            if battle.if_battle_log:
-                battle.log.append("[Skip] No playable cards this turn.")
-            return
         while True:
-            card = self.strategy.select_card(hand, self, enemies, battle)
+            if "Entangled" in self.buffs:
+                playable_cards = [card for card in hand if card.card_type != "attack" and getattr(card, "playable", True)]
+                if battle.if_battle_log:
+                    battle.log.append("[Entangled] Not allowed to play attack cards")
+            else:
+                playable_cards = [card for card in hand if getattr(card, "playable", True)]
+            if not playable_cards:
+                if battle.if_battle_log:
+                    battle.log.append("[Skip] No playable cards this turn.")
+                return
+            card = self.strategy.select_card(playable_cards, self, enemies, battle)
             if card is None:
                 break
             if not getattr(card, "playable", True):

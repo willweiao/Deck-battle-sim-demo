@@ -46,8 +46,8 @@ class Battle:
         return counter
 
     def log_state(self):
-        enemy_states = [f"{enemy.name}(HP: {enemy.hp}, Buffs: {enemy.buffs}, Debuffs: {enemy.debuffs})" for enemy in self.enemies]
-        self.log.append(f"[Turn {self.turn} End] Player HP: {self.player.hp}, Buffs: {self.player.buffs}, Debuffs: {self.player.debuffs}, Powers: {self.player.powers}")
+        enemy_states = [f"{enemy.name}(HP: {enemy.hp}, Block:{enemy.block}, Buffs: {enemy.buffs}, Debuffs: {enemy.debuffs})" for enemy in self.enemies]
+        self.log.append(f"[Turn {self.turn} End] Player HP: {self.player.hp}, Block: {self.player.block}, Buffs: {self.player.buffs}, Debuffs: {self.player.debuffs}, Powers: {self.player.powers}")
         for e_state in enemy_states:
             self.log.append(f"Enemy: {e_state}")
     

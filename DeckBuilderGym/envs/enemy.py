@@ -30,7 +30,8 @@ class Enemy:
         self.enemy_group = group
     
     def begin_turn(self, battle):
-        self.block = 0
+        if "Barricade" not in self.buffs:
+            self.block = 0
         self.tick_buffs_and_debuffs(battle)
     
     def end_turn(self,battle=None):
@@ -41,6 +42,11 @@ class Enemy:
                 if battle is not None and battle.if_battle_log:
                     battle.log.append(f"[EndTurn] {self.name} loses {amount} Strength.")
             del self.debuffs["LoseStrength"]
+        if "GainStrength" in self.buffs:
+            amount = self.buffs["GainStrength"].get("value",0)
+            self.apply_buff(name="Strength", value=amount)
+            if battle is not None and battle.if_battle_log:
+                battle.log.append(f"[EndTurn] {self.name} gaines {amount} Strength.")
                 
     def tick_buffs_and_debuffs(self, battle=None):
         # Buffs
@@ -82,6 +88,9 @@ class Enemy:
                 self.buffs[name]["duration"] = duration
 
     def apply_debuff(self, name, duration, value=None):
+        if "Artifact" in self.buffs and self.buffs["Artifact"]["value"] > 0:
+            self.buffs["Artifact"]["value"] -= 1
+            return
         if name not in self.debuffs:
             self.debuffs[name] = {"duration": 0}
 
@@ -130,7 +139,7 @@ class AttackIntent(EnemyIntent):
         battle.player.take_damage(damage)
 
 class BlockIntent(EnemyIntent):
-    def __init__(self, amount, target_selector):
+    def __init__(self, amount, target_selector="self"):
         self.amount = amount
         self.target_selector = target_selector
 
@@ -138,14 +147,14 @@ class BlockIntent(EnemyIntent):
         targets = resolve_target_selector(user, self.target_selector, battle)
         for target in targets:
             block = EffectCalculator.modified_block(self.amount, user=target)
-            self.target.gain_block(block)
+            target.gain_block(block)
 
 class BuffIntent(EnemyIntent):
-    def __init__(self, name, target_selector, value, duration=None):
+    def __init__(self, name, value, duration=None, target_selector="self"):
         self.name = name
-        self.target_selector = target_selector
         self.value = value
         self.duration = duration
+        self.target_selector = target_selector
 
     def execute(self, user, battle):
         targets = resolve_target_selector(user, self.target_selector, battle)
@@ -162,7 +171,7 @@ class DebuffIntent(EnemyIntent):
         battle.player.apply_debuff(self.name, self.duration, self.value)
 
 class HealIntent(EnemyIntent):
-    def __init__(self, amount, target_selector):
+    def __init__(self, amount, target_selector="self"):
         self.amount = amount
         self.target_selector = target_selector
 
@@ -194,7 +203,7 @@ class InsertCardIntent(EnemyIntent):
                 else:
                     battle.discard_pile.append(card)
         if battle.if_battle_log:
-            battle.log.append(f"[Intent] {user.name} inserts {self.amount}x '{card.name}' into player's discard pile.")
+            battle.log.append(f"[Intent] {user.name} inserts {self.amount}x '{card.name}' into player's {self.destination} pile.")
 
 class SpawnIntent(EnemyIntent):
     def __init__(self, summon_enemy_id, amount=2):

@@ -9,10 +9,30 @@
   },
   "group01": {
     "name": "Slime_Duo",
-    "enemy_ids": ["1", "2"]
+    "enemy_ids": ["2", "3"]
   },
   "group02": {
     "name": "Slime_large",
-    "enemy_ids": ["3"]
+    "enemy_ids": ["4"]
+  },
+  "group03":{
+    "name":"Spheric_Guardian",
+    "enemy_ids":["5"]
+  },
+  "group04":{
+    "name":"Cultists_Trio",
+    "enemy_ids":["6", "6", "6"]
+  },
+  "group05":{
+    "name":"Orb_Walker_Duo",
+    "enemy_ids":["7","7"]
+  },
+  "group06":{
+    "name":"Slime_party",
+    "enemy_ids":["1","1","2","2","2"]
+  },
+  "group07":{
+    "name":"Taskmaster",
+    "enemy_ids":["8", "10", "9"]
   }
 }

@@ -15,7 +15,7 @@ Thanks for your interest in improving DeckBattle-Sim!
 - **Try your changes:** 
   1. Run a demo battle:
   - build a `debug_deck` in `data/deck.json`("deck05");
-  - replace the default setup in `envs/demo_battle.py` with debug deck and dummy enmmies in `data/enemy.json` and `data/enemy_group.json`;
+  - replace the default setup in `envs/demo_battle.py` with debug deck and dummy enmmies in `data/enemy.json`(enemy.id=="0") and `data/enemy_group.json`("group00" for single enemy and "group000" for group of enemies);
   - run `envs/demo_battle.py` and see the generated log file.
   2. Run a sample simulation or play test:
   - replace the default setup as in `README.md`;

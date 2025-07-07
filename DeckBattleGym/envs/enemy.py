@@ -1,7 +1,7 @@
 import random
-from effectcalculator import EffectCalculator
-from utils import resolve_target_selector
-from buff_n_debuff import apply_regen, tick_poison, tick_standard_duration
+from DeckBattleGym.envs.effectcalculator import EffectCalculator
+from DeckBattleGym.envs.utils import resolve_target_selector
+from DeckBattleGym.envs.buff_n_debuff import apply_regen, tick_poison, tick_standard_duration
 
 
 class Enemy:
@@ -187,7 +187,7 @@ class InsertCardIntent(EnemyIntent):
         self.destination = destination
 
     def execute(self, user, battle):
-        from card import Card
+        from DeckBattleGym.envs.card import Card
 
         for _ in range(self.amount):
             card_template = battle.card_id_map[self.card_id]
@@ -211,7 +211,7 @@ class SpawnIntent(EnemyIntent):
         self.amount = amount
 
     def execute(self, user, battle):
-        from loader import load_enemy_by_id 
+        from DeckBattleGym.envs.loader import load_enemy_by_id 
 
         for _ in range(self.amount):
             mid_slime = load_enemy_by_id(self.summon_enemy_id)

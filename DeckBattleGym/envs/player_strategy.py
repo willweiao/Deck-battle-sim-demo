@@ -29,7 +29,12 @@ class SimpleStrategy:
         
 class RandomStrategy:
     def select_card(self, hand, player, enemies, battle):
-        can_play = [card for card in hand if card.cost <= player.energy and getattr(card, "playable", True)]
+        can_play = []
+        for card in hand:
+            if card.cost == "x":
+                can_play.append(card)
+            elif isinstance(card.cost, (int, float)) and card.cost <= player.energy:
+                can_play.append(card)
         return random.choice(can_play) if can_play else None
 
     def select_target(self, card, player, enemies, battle):

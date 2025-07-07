@@ -1,10 +1,16 @@
+import sys
 import os
 import json
+# -----------------------------------------------
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
+# -----------------------------------------------
+
 from copy import deepcopy
-from battle import Battle
-from player import Player
-from player_strategy import RandomStrategy
-from loader import load_card_pool, load_deck_by_id, load_enemy_group
+from DeckBattleGym.envs.battle import Battle
+from DeckBattleGym.envs.player import Player
+from DeckBattleGym.envs.player_strategy import RandomStrategy
+from DeckBattleGym.envs.loader import load_card_pool, load_deck_by_id, load_enemy_group
 
 
 def run_simulation(deck_json_path, deck_id, 
@@ -27,12 +33,12 @@ def run_simulation(deck_json_path, deck_id,
         "deck_name": deck_name,
         "cards": [card.id for card in deck],
         "enemygroup_id": enemygroup_name,
-        "initial_hp": 50,
+        "initial_hp": 80,
         "simulations": []
     }
 
     for _ in range(num_simulations):
-        player = Player(name="Hero", hp=50, energy=3, strategy=RandomStrategy())
+        player = Player(name="Hero", hp=80, energy=3, strategy=RandomStrategy())
         enemies = [deepcopy(e) for e in enemies_template]
         battle = Battle(player, enemies, deepcopy(deck), card_pool=card_pool,if_battle_log=False)
 
@@ -61,10 +67,10 @@ if __name__ == "__main__":
    
     run_simulation(
         deck_json_path=deck_json_path,
-        deck_id="deck01",
+        deck_id="deck06",
         enemygroup_json_path=enemygroup_json_path,
-        enemygroup_id="group01",
-        num_simulations=100
+        enemygroup_id="group04",
+        num_simulations=1000
     )
 
 

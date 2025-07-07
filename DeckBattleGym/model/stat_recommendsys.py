@@ -35,7 +35,7 @@ def generate_action_stats(examine_path, only_wins=True):
 
             for action in turn["actions"]:
                 card_id = action["card"]
-                targets = tuple(sorted(action.get("target", [])))  
+                targets = tuple(sorted(action.get("targets", [])))  
                 action_stats[stat_key][(card_id, targets)] += 1
     
     return action_stats

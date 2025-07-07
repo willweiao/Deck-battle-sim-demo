@@ -99,7 +99,7 @@ class Battle:
                 target_info = "with no target"
             self.log.append(f"[Play] {user.name} plays {card.name} {target_info}.")
         else:
-            target_ids = [getattr(t, "id", "unknown") for t in targets]
+            target_ids = [getattr(t, "id", "unknown") for t in targets]   
             self.running_log["actions"].append({
                 "card":card.id,
                 "targets":target_ids

@@ -1,4 +1,4 @@
-from utils import get_buff_value, get_debuff_value, has_buff, has_debuff
+from DeckBattleGym.envs.utils import get_buff_value, get_debuff_value, has_buff, has_debuff
 
 
 class EffectCalculator:

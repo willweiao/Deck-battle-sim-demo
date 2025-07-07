@@ -1,8 +1,9 @@
-from player_strategy import SimpleStrategy
-from buff_n_debuff import apply_regen, apply_strength_gain, tick_poison, tick_standard_duration
+from DeckBattleGym.envs.player_strategy import SimpleStrategy
+from DeckBattleGym.envs.buff_n_debuff import apply_regen, apply_strength_gain, tick_poison, tick_standard_duration
 
 class Player:
     def __init__(self, name, hp, energy, 
+                 id="p",
                  max_hp=None, 
                  max_energy=3, 
                  buffs=None, 
@@ -11,6 +12,7 @@ class Player:
                  strategy=None):
         self.name = name
         self.hp = hp
+        self.id = id
         self.max_hp = max_hp or hp
         self.energy = energy
         self.max_energy = max_energy

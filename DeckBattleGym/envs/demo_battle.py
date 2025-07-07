@@ -1,7 +1,13 @@
+import sys
 import os
-from player import Player
-from battle import Battle
-from loader import load_card_pool,load_deck_by_id, load_enemy_group
+# -----------------------------------------------
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
+# -----------------------------------------------
+
+from DeckBattleGym.envs.player import Player
+from DeckBattleGym.envs.battle import Battle
+from DeckBattleGym.envs.loader import load_card_pool,load_deck_by_id, load_enemy_group
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import random
 from copy import deepcopy
-from effectcalculator import EffectCalculator
-from utils import get_buff_value, get_debuff_value, has_buff, has_debuff
+from DeckBattleGym.envs.effectcalculator import EffectCalculator
+from DeckBattleGym.envs.utils import get_buff_value, get_debuff_value, has_buff, has_debuff
 
 
 class Card:

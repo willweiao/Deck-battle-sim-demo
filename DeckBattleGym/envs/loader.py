@@ -1,8 +1,8 @@
 import os
 import json
 import random
-from card import Card, AttackEffect,XAttackEffect,BlockEffect,BlockBasedAttack, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, ReaperAttackEffect, DoubleBlockEffect, DoubleStrengthEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
-from enemy import Enemy, AttackIntent,BlockIntent,BuffIntent,DebuffIntent,HealIntent,InsertCardIntent,SpawnIntent
+from DeckBattleGym.envs.card import Card, AttackEffect,XAttackEffect,BlockEffect,BlockBasedAttack, BuffEffect, DebuffEffect, DrawEffect, EnergyEffect, HPEffect, ReaperAttackEffect, DoubleBlockEffect, DoubleStrengthEffect, PowerEffect, StatusEffect, ExhaustByTypeEffect, GenerateCardEffect
+from DeckBattleGym.envs.enemy import Enemy, AttackIntent,BlockIntent,BuffIntent,DebuffIntent,HealIntent,InsertCardIntent,SpawnIntent
 
 
 def parse_effect(effect_dict):

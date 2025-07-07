@@ -416,13 +416,13 @@
     },
     {
         "id":"33",
-        "name":"Rupture",
+        "name":"Rupture+",
         "rarity":"rare",
         "cost":1,
         "card_type":"power",
         "target_selector":"self",
         "effects":[
-            {"effect":"power", "name":"Rupture", "value":1}
+            {"effect":"power", "name":"Rupture", "value":2}
         ]
     },
     {

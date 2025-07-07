@@ -14,7 +14,7 @@ from DeckBattleGym.model.stat_recommendsys import generate_action_stats, recomme
 
 
 if __name__ == "__main__":
-    examine_experiment_json = "basic_vs_Slime_Duo.json"                # change here the simulated battle 
+    examine_experiment_json = "basic_vs_Slime_Duo.json"                # <-- replace here to the simulated battle 
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     examine_path = os.path.join(base_dir, "experiments", examine_experiment_json)
     
@@ -24,14 +24,14 @@ if __name__ == "__main__":
     enemy_path = os.path.join(base_dir, "data", "enemy_group.json")
 
     card_pool = load_card_pool("card.json")
-    deck, _ = load_deck_by_id(deck_path, "deck01", card_pool)           # must use the same deck as in the simulation
-    enemies_template, _ = load_enemy_group(enemy_path, "group01")       # same, need to comfront the same enemy as in the sim
+    deck, _ = load_deck_by_id(deck_path, "deck01", card_pool)           # <-- must use the same deck as in the simulation
+    enemies_template, _ = load_enemy_group(enemy_path, "group01")       # <-- same, need to comfront the same enemy as in the sim
     enemies = [e for e in enemies_template]
     
     # start battle 
     player = Player(name="Hero", hp=80, energy=3, strategy=ManualStrategy())
     battle = Battle(player, enemies, deck, card_pool=card_pool, if_battle_log=True)
-
+    battle.battle_start()
     turn = 0
     while True:
         turn += 1

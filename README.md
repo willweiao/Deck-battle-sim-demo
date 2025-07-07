@@ -5,6 +5,7 @@ This is a lightweighted, unofficial, personal project inspired by the game Slay 
 - A mass simulation and dataset generation script. The `/sim/simulate_battle.py` can run thousands of self-play battles using user-defined deck and enemy_group from `/data/deck.json` and `/data/enemy_group.json`. It logs per-turn state, action, and outcome as JSON lines to `/experiments`.
 - A simple recommendation model for analysing simulation data. In each turn rank every card based on their estimated chances of winning the battle. The file is in `/model/stat_recommendsys.py`.
 - A human playable demo embedded with recommendations. In `/tests/battle_with_recommend.py` you can play through a battle interactively in the terminal. When playing the same setup as in simulations, the stats-based recommender suggests the best card-target combination to maximize your win rate, letting you directly compare your decisions with the automated strategy.
+
 ![CLI demo](docs/demo.gif)
 
 ---

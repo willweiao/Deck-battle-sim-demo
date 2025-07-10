@@ -76,7 +76,7 @@ if __name__ == "__main__":
                 else:
                     continue  # Invalid input fallback
             else:
-                print("Recommended Actions by the order of winning time:")
+                print("Recommended Actions by the order of winning chance:")
                 for i, (card, targets) in enumerate(filtered_ranking):
                     print(f"{i+1}. {card.name} → targets: {targets}")
     
